@@ -1,6 +1,4 @@
-let globalTimestamp = new Date();
 let reloadStateHandle = null;
-
 
 function loadState() {
     // $.getJSON("http://localhost:8080/short.json", function (data) {
@@ -17,12 +15,12 @@ function updateState(data) {
     //     document.getElementById("loadingBeacon").style.animation = "fadeOutAnimation 100ms 1;";
     // });
     let rxArea = document.getElementById("rfArea");
-    // rxArea.innerHTML = "DATA:";
+
     for(const [key,rx] of Object.entries(data)) {
         if(document.getElementById("rx-"+key) === null) {
             rxArea.insertAdjacentHTML('beforeend', "" +
-                "<div class='rx' id='rx-"+key+"' style='opacity: "+((rx.lastCyclePilot === 0) ? ".5" : "1")+";'>" +
-                // "<div class='rx' id='rx-"+key+"'>" +
+                // "<div class='rx' id='rx-"+key+"' style='opacity: "+((rx.lastCyclePilot === 0) ? ".5" : "1")+";'>" +
+                "<div class='rx' id='rx-"+key+"'>" +
                     "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
                         "<div style='font-weight: bold; font-size: 1.2em; float: left;'>&nbsp;</div>" +
                         "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'>&nbsp;<small>MHz</small></div>" +
@@ -44,36 +42,60 @@ function updateState(data) {
                         "</div>" +
                         "<div style='align-content: start; overflow: hidden;'>" +
                             "<div style='align-content: start;'>" +
-                                "<div style='width: 100%; transform-origin: left; height: 1rem; background-color: #d16454; text-align: left;'></div>" +
-                                "<div style='width: 100%; transform-origin: left; height: 1rem; background-color: #d16454; text-align: left; margin-top: .1rem;'></div>" +
+                                // "<meter value='0' min='0' max='100' style='width: 100%; transform-origin: left; height: 1rem; background-color: transparent;'></meter>" +
+                                "<div class='meterBox'>" +
+                                    "<span>I</span>" +
+                                    "<div style='background-color: #d16454;'></div>" +
+                                "</div>" +
+                                "<div class='meterBox' style='margin-top: .1rem;'>" +
+                                    "<span>II</span>" +
+                                    "<div style='background-color: #d16454;'></div>" +
+                                "</div>" +
                             "</div>" +
-                            "<div style='width: 100%; transform-origin: left; height: 1rem; background-color: #ed9152; text-align: left; margin-top: .25rem;'></div>" +
+                            "<div class='meterBox' style='margin-top: .25rem;'>" +
+                                "<span></span>" +
+                                "<div style='width: 100%; transform-origin: left; height: 100%; background-color: #ed9152;'></div>" +
+                            "</div>" +
                         "</div>" +
-                        "<div style='color: red;'></div>" +
+                        "<div style='color: red; margin-top: .5rem;'></div>" +
                     "</div>" +
                 "</div>");
         }
         else {
             let rxObject = document.getElementById("rx-"+key);
-            rxObject.children[0].children[0].innerHTML = rx.name+"";
-            rxObject.children[0].children[1].innerHTML = rx.freq+"<small>MHz</small>";
-            if(rx.battery.percentage > 90)
+            if(rx.lastCyclePilot === 0)
+                rxObject.classList.add("rxInactive");
+            else
+                rxObject.classList.remove("rxInactive");
+
+            if(rx.warningString !== "OK" && rx.warningString !== "RF Mute")
+                rxObject.classList.add("rxHighlight");
+            else
+                rxObject.classList.remove("rxHighlight");
+
+            rxObject.children[0].children[0].innerHTML = ""+rx.name;
+            rxObject.children[0].children[1].innerHTML = ""+rx.freq+"<small>MHz</small>";
+
+            if(rx.battery.percentage > 70)
+                rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "darkgreen");
+            else if(rx.battery.percentage > 30)
                 rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "green");
-            else if(rx.battery.percentage > 40)
-                rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "yellow");
+            else if(rx.battery.percentage > 10)
+                rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "gold");
             else
                 rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "red");
+
             rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("height", ""+Math.min(90,(rx.battery.percentage * 0.9))+"%");
+
             rxObject.children[1].children[0].children[0].children[0].children[3].style.visibility = rx.battery.known ? "hidden" : "visible";
             rxObject.children[1].children[0].children[0].children[0].children[4].style.visibility = (rx.battery.known && rx.battery.percentage === 0) ? "visible" : "hidden";
-            // rxObject.children[1].children[0].children[0].children[0].children[0].style.animation
 
-            // rxObject.children[1].children[1].children[0].children[0].style.width = Math.min(100,(rx.rf1.min))+"%";
-            // rxObject.children[1].children[1].children[0].children[1].style.width = Math.min(100,(rx.rf2.min))+"%";
-            // rxObject.children[1].children[1].children[1].style.width = Math.min(100,(rx.af.currentPeak))+"%";
-            rxObject.children[1].children[1].children[0].children[0].style.transform = "scaleX("+Math.min(100,(rx.rf1.min))+"%)";
-            rxObject.children[1].children[1].children[0].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
-            rxObject.children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
+            rxObject.children[1].children[1].children[0].children[0].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf1.min))+"%)";
+            rxObject.children[1].children[1].children[0].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
+
+            rxObject.children[1].children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
+            // rxObject.children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
+
             rxObject.children[1].children[2].innerHTML = (rx.warningString === "OK") ? "&nbsp;" : rx.warningString;
         }
     }
@@ -98,7 +120,7 @@ document.addEventListener('DOMContentLoaded', function () {
     conditionalLog("execute ready function");
     updateWindowSize();
     if(reloadStateHandle === null)
-        reloadStateHandle = window.setInterval(loadState,200); //15
+        reloadStateHandle = window.setInterval(loadState,500); //15
 
     // window.setTimeout(stopRefresh, 5000);
     document.getElementById("loadingBeacon").addEventListener('animationiteration', function() {
