@@ -23,7 +23,7 @@ function updateState(data) {
                 "<div class='rx' id='rx-"+key+"'>" +
                     "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
                         "<div style='font-weight: bold; font-size: 1.2em; float: left;'>&nbsp;</div>" +
-                        "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'>&nbsp;<small>MHz</small></div>" +
+                        "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'><span></span><small>MHz</small></div>" +
                     "</div>" +
                     "<div style='clear: both;'>" +
                         "<div style='float: left; padding-right: .5rem;'>" +
@@ -73,8 +73,10 @@ function updateState(data) {
             else
                 rxObject.classList.remove("rxHighlight");
 
-            rxObject.children[0].children[0].innerHTML = ""+rx.name;
-            rxObject.children[0].children[1].innerHTML = ""+rx.freq+"<small>MHz</small>";
+            // rxObject.children[0].children[0].innerHTML = ""+rx.name;
+            rxObject.children[0].children[0].textContent = rx.name;
+            // rxObject.children[0].children[1].children[0].innerHTML = ""+rx.freq+"<small>MHz</small>";
+            rxObject.children[0].children[1].children[0].textContent = rx.freq;
 
             if(rx.battery.percentage > 70)
                 rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "darkgreen");
@@ -96,7 +98,8 @@ function updateState(data) {
             rxObject.children[1].children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
             // rxObject.children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
 
-            rxObject.children[1].children[2].innerHTML = (rx.warningString === "OK") ? "&nbsp;" : rx.warningString;
+            // rxObject.children[1].children[2].innerHTML = (rx.warningString === "OK") ? "&nbsp;" : rx.warningString;
+            rxObject.children[1].children[2].textContent = (rx.warningString === "OK") ? " " : rx.warningString;
         }
     }
 }
