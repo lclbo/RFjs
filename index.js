@@ -172,7 +172,7 @@ function updateReceiver(address, msg) {
                 receivedItemsShort.battery = receivedItemsFull.battery;
                 break;
             case "msg":
-                receivedItemsFull.warningString = item[1].toString();
+                receivedItemsFull.warningString = item[1].toString().replace("_", " ");
                 break;
         }
     });
