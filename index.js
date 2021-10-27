@@ -1,9 +1,11 @@
 const dgram = require('dgram');
-const net = require('net');
+// const net = require('net');
+const http = require('http');
 const fs = require('fs');
+
 const udpSock = dgram.createSocket('udp4');
 // const tcpSock = new net.Socket();
-const http = require('http');
+
 
 let pushIntervalHandle = null;
 
@@ -41,8 +43,8 @@ udpSock.on('error', (err) => {
 });
 
 udpSock.on('message', (msg, senderInfo) => {
-    let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
-    console.log(msgDebug);
+    // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
+    // console.log(msgDebug);
 
     if(!((""+senderInfo.address) in knownReceiversFull)) {
         console.log("unknown receiver "+senderInfo.address);
@@ -57,7 +59,7 @@ udpSock.on('listening', () => {
     const address = udpSock.address();
     console.log(`server listening on ${address.address}:${address.port}`);
 });
-// udpSock.bind(53212, "192.168.1.218");
+
 udpSock.bind(53212, "192.168.1.218", () => {
     udpSock.setBroadcast(true);
 });
@@ -183,6 +185,10 @@ function updateReceiver(address, msg) {
     knownReceiversShort[address] = Object.assign({}, knownReceiversShort[address], receivedItemsShort);
 
     fs.writeFile('RxFull.json', JSON.stringify(knownReceiversFull), (err) => {
+        if(err !== null)
+            console.log("file write error: "+err);
+    });
+    fs.writeFile('RxShort.json', JSON.stringify(knownReceiversShort), (err) => {
         if(err !== null)
             console.log("file write error: "+err);
     });

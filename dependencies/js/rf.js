@@ -19,10 +19,9 @@ function updateState(data) {
     for(const [key,rx] of Object.entries(data)) {
         if(document.getElementById("rx-"+key) === null) {
             rxArea.insertAdjacentHTML('beforeend', "" +
-                // "<div class='rx' id='rx-"+key+"' style='opacity: "+((rx.lastCyclePilot === 0) ? ".5" : "1")+";'>" +
                 "<div class='rx' id='rx-"+key+"'>" +
                     "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
-                        "<div style='font-weight: bold; font-size: 1.2em; float: left;'>&nbsp;</div>" +
+                        "<div style='font-weight: bold; font-size: 1.2em; float: left; overflow: hidden;'>&nbsp;</div>" +
                         "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'><span></span><small>MHz</small></div>" +
                     "</div>" +
                     "<div style='clear: both;'>" +
@@ -42,22 +41,29 @@ function updateState(data) {
                         "</div>" +
                         "<div style='align-content: start; overflow: hidden;'>" +
                             "<div style='align-content: start;'>" +
-                                // "<meter value='0' min='0' max='100' style='width: 100%; transform-origin: left; height: 1rem; background-color: transparent;'></meter>" +
-                                "<div class='meterBox'>" +
+                                "<div class='meterBox rfMeterBox'>" +
                                     "<span>I</span>" +
-                                    "<div style='background-color: #d16454;'></div>" +
+                                    "<div></div>" +
+                                    "<div></div>" +
                                 "</div>" +
-                                "<div class='meterBox' style='margin-top: .1rem;'>" +
+                                "<div class='meterBox rfMeterBox' style='margin-top: .1rem;'>" +
                                     "<span>II</span>" +
-                                    "<div style='background-color: #d16454;'></div>" +
+                                    "<div></div>" +
+                                    "<div></div>" +
                                 "</div>" +
                             "</div>" +
-                            "<div class='meterBox' style='margin-top: .25rem;'>" +
+                            "<div class='meterBox afMeterBox' style='margin-top: .25rem;'>" +
                                 "<span></span>" +
-                                "<div style='width: 100%; transform-origin: left; height: 100%; background-color: #ed9152;'></div>" +
+                                "<div></div>" +
+                                "<div></div>" +
                             "</div>" +
                         "</div>" +
-                        "<div style='color: red; margin-top: .5rem;'></div>" +
+                        "<div class='bottomBox'>" +
+                            "<div>P</div>" +
+                            "<div></div>" +
+                            "<div>&#x26A0;</div>" +
+                            "<div></div>" +
+                        "</div>" +
                     "</div>" +
                 "</div>");
         }
@@ -73,9 +79,7 @@ function updateState(data) {
             else
                 rxObject.classList.remove("rxHighlight");
 
-            // rxObject.children[0].children[0].innerHTML = ""+rx.name;
             rxObject.children[0].children[0].textContent = rx.name;
-            // rxObject.children[0].children[1].children[0].innerHTML = ""+rx.freq+"<small>MHz</small>";
             rxObject.children[0].children[1].children[0].textContent = rx.freq;
 
             if(rx.battery.percentage > 70)
@@ -93,13 +97,31 @@ function updateState(data) {
             rxObject.children[1].children[0].children[0].children[0].children[4].style.visibility = (rx.battery.known && rx.battery.percentage === 0) ? "visible" : "hidden";
 
             rxObject.children[1].children[1].children[0].children[0].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf1.min))+"%)";
-            rxObject.children[1].children[1].children[0].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
+            rxObject.children[1].children[1].children[0].children[0].children[2].style.transform = "scaleX("+Math.min(100,(rx.rf1.max))+"%)";
 
-            rxObject.children[1].children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
+            rxObject.children[1].children[1].children[0].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
+            rxObject.children[1].children[1].children[0].children[1].children[2].style.transform = "scaleX("+Math.min(100,(rx.rf2.max))+"%)";
+
+            rxObject.children[1].children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentHold))+"%)";
+            rxObject.children[1].children[1].children[1].children[2].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
             // rxObject.children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
 
-            // rxObject.children[1].children[2].innerHTML = (rx.warningString === "OK") ? "&nbsp;" : rx.warningString;
-            rxObject.children[1].children[2].textContent = (rx.warningString === "OK") ? " " : rx.warningString;
+            switch (rx.lastCyclePilot) {
+                case 0:
+                    rxObject.children[1].children[2].children[0].textContent = " ";
+                    break;
+                case 1:
+                    rxObject.children[1].children[2].children[0].textContent = "P";
+                    rxObject.children[1].children[2].children[0].style.color = "";
+                    break;
+                case 2:
+                    rxObject.children[1].children[2].children[0].textContent = "P";
+                    rxObject.children[1].children[2].children[0].style.color = "red";
+            }
+
+            rxObject.children[1].children[2].children[1].textContent = ((Math.sign(rx.afOut) !== -1) ? "+" : "") + "" + rx.afOut;
+            rxObject.children[1].children[2].children[2].style.visibility = (rx.flags.lastCycleMute === 1) ? "visible" : "hidden";
+            rxObject.children[1].children[2].children[3].textContent = (rx.warningString === "OK") ? " " : rx.warningString;
         }
     }
 }

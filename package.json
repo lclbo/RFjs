@@ -8,9 +8,5 @@
   },
   "keywords": [],
   "author": "",
-  "license": "ISC",
-  "dependencies": {
-    "dgram": "^1.0.1",
-    "require": "^2.4.20"
-  }
+  "license": "ISC"
 }

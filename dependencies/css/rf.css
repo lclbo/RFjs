@@ -71,11 +71,11 @@ body {
 }
 
 @keyframes moveX {
-    from {left: 0%; transform: translateX(0);}
+    from {left: 0; transform: translateX(0);}
     to {left: 100%; transform: translateX(-100%);}
 }
 @keyframes moveY {
-    from {top: 0%;}
+    from {top: 0;}
     to {top: calc(100% - 5rem);}
 }
 @keyframes pulseAnimation {
@@ -87,20 +87,6 @@ body {
 @keyframes fadeOutAnimation {
     from { opacity: 1; }
     to   { opacity: 0; }
-}
-
-@keyframes fill {
-    0% {
-        transform: scaleX(0);
-        fill: red;
-    }
-    50% {
-        fill: yellow;
-    }
-    100% {
-        transform: scaleX(1);
-        fill:#72CC58;
-    }
 }
 
 .rx {
@@ -126,6 +112,7 @@ body {
 }
 
 .meterBox {
+    position: relative;
     width: 100%;
     align-content: start;
     overflow: hidden;
@@ -140,7 +127,7 @@ body {
 }
 
 .meterBox div {
-    position: relative;
+    position: absolute;
     left: 0;
     top: 0;
     height: 100%;
@@ -148,17 +135,61 @@ body {
     transform-origin: left;
 }
 
+.meterBox div:nth-of-type(1) {
+    z-index: 102;
+}
+.meterBox div:nth-of-type(2) {
+    z-index: 101;
+}
+
+.rfMeterBox div:nth-of-type(1) {
+    background-color: #d16454;
+}
+.rfMeterBox div:nth-of-type(2) {
+    /*background-color: #8b5e5f;*/
+    background: repeating-linear-gradient( -45deg, #8B5E5F44 0px, #8B5E5F44 2px, #8b5e5f 3px, #8b5e5f 13px, #8B5E5F44 15px);
+}
+
+.afMeterBox div:nth-of-type(1) {
+    background: transparent;
+    border-right: 3px solid #f56c07;
+}
+.afMeterBox div:nth-of-type(2) {
+    background-color: #ed9152;
+}
+
 .meterBox span {
-    position: relative;
-    /*width: 1rem;*/
-    /*text-align: center;*/
+    position: absolute;
     left: .1rem;
     top: 50%;
     transform: translate(0,-50%);
-    /*float: right;*/
     float: left;
     font-size: .5rem;
-    z-index: 101;
+    z-index: 103;
+}
+
+.bottomBox {
+    margin-top: .5rem;
+    position: relative;
+    height: 1rem;
+}
+
+.bottomBox div:nth-of-type(1) {
+    float: left;
+    font-size: .75rem;
+}
+.bottomBox div:nth-of-type(2) {
+    float: left;
+    font-size: .75rem;
+}
+
+.bottomBox div:nth-last-of-type(2) {
+    float: right;
+    font-size: 1.5rem;
+    line-height: 1rem;
+}
+.bottomBox div:last-of-type {
+    color: red;
 }
 
 @keyframes rxBgPulseRed {
@@ -172,19 +203,19 @@ body {
 }
 
 @keyframes rxBgToRed {
-    0% {
+    from {
         background-color: #762551;
     }
-    100% {
+    to {
         background-color: #760000;
     }
 }
 
 @keyframes rxBgToNormal {
-    0% {
+    from {
         background-color: #760000;
     }
-    100% {
+    to {
         background-color: #762551;
     }
 }
