@@ -40,9 +40,17 @@ function loadState() {
 }
 
 function updateState(data, full=false) {
+    console.log(data);
     let rxArea = document.getElementById("rfArea");
 
-    for(const [key,rx] of Object.entries(data)) {
+    if(data.length === 0)
+        document.getElementById('noDevicesOverlay').classList.remove("hidden");
+    else
+        document.getElementById('noDevicesOverlay').classList.add("hidden");
+
+
+    // for(const [key,rx] of Object.entries(data)) {
+    for(const [key,rx] of data) {
         if(document.getElementById("rx-"+key) === null) {
             rxArea.insertAdjacentHTML('beforeend', "" +
                 "<div class='rx' id='rx-"+key+"'>" +
@@ -149,7 +157,7 @@ function updateState(data, full=false) {
             }
 
             // rxObject.children[1].children[2].children[1].textContent = ((Math.sign(rx.afOut) !== -1) ? "+" : "") + "" + rx.afOut;
-            rxObject.children[1].children[2].children[2].style.visibility = (rx.flags.lastCycleMute === 1 && rx.warningString !== "RF Mute") ? "visible" : "hidden";
+            rxObject.children[1].children[2].children[2].style.visibility = (rx.flags.lastCycleMute && rx.warningString !== "RF Mute") ? "visible" : "hidden";
             rxObject.children[1].children[2].children[3].textContent = (rx.warningString === "OK" || rx.warningString === "RF Mute") ? " " : rx.warningString;
         }
     }

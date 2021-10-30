@@ -1,41 +1,84 @@
 const dgram = require('dgram');
-// const net = require('net');
 const http = require('http');
 const fs = require('fs');
+const os = require('os');
 
 const udpSock = dgram.createSocket('udp4');
-// const tcpSock = new net.Socket();
+let udpBindAddress = null;
 
+let httpServerPort = 80;
 
-let pushIntervalHandle = null;
+let pushIntervalHandleA;
+let pushIntervalHandleB;
 
-let knownReceiversFull  = {};
-let knownReceiversShort = {};
+let knownReceiversFull  = new Map();
+let knownReceiversShort = new Map();
+
+const networkInterfaces = os.networkInterfaces();
+// console.log(networkInterfaces);
+for (const netIdx in networkInterfaces) {
+    for(const addrIdx in networkInterfaces[netIdx]) {
+        if(networkInterfaces[netIdx][addrIdx].family === "IPv6")
+            continue;
+        if(networkInterfaces[netIdx][addrIdx].address.includes("127.0.0.1"))
+            continue;
+        if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0")
+            continue;
+
+        udpBindAddress = networkInterfaces[netIdx][addrIdx].address;
+        // console.log(udpBindAddress);
+    }
+}
 
 http.createServer(function(req, res){
-    res.writeHead(200, {"content-Type":'application/json'});
-    if(req.url.includes("RxShort.json"))
-        res.end(JSON.stringify(knownReceiversShort));
-    else
-        res.end(JSON.stringify(knownReceiversFull));
-}).listen(8080);
+    // res.writeHead(200, {"content-Type":'application/json'});
 
-// tcpSock.connect(8088, '0.0.0.0', function() {
-//     console.log('Connected');
-//     tcpSock.write(JSON.stringify(knownReceiversFull));
-// });
-// tcpSock.on('error', function(ex) {
-//     console.log("handled error");
-//     console.log(ex);
-// });
-// tcpSock.on('data', function(data) {
-//     console.log('Received: ' + data);
-//     tcpSock.destroy(); // kill client after server's response
-// });
-//
-// tcpSock.on('close', function() {
-//     console.log('Connection closed');
-// });
+    if(req.url.includes("RxShort.json")) {
+        res.statusCode = 200;
+        return res.end(JSON.stringify([...knownReceiversShort]));
+    }
+    else if(req.url.includes("RxFull.json")) {
+        res.statusCode = 200;
+        return res.end(JSON.stringify([...knownReceiversFull]));
+    }
+    else if(req.url.includes("rf.js")) {
+        fs.readFile("www/rf.js", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else if(req.url.includes("rf.css")) {
+        fs.readFile("www/rf.css", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else if(req.url === "/" || req.url.includes("index.html")) {
+        fs.readFile("www/index.html", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else {
+        // res.writeHead(404, {"content-Type":'application/json'});
+        res.statusCode = 404;
+        // console.log("Request to >"+req.url+"<");
+        return res.end("I have no idea what you are looking for. This file does not exist.");
+    }
+}).listen(httpServerPort);
+
 
 udpSock.on('error', (err) => {
     console.log('server error: \n' + err.stack);
@@ -46,8 +89,9 @@ udpSock.on('message', (msg, senderInfo) => {
     // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
     // console.log(msgDebug);
 
-    if(!((""+senderInfo.address) in knownReceiversFull)) {
-        console.log("unknown receiver "+senderInfo.address);
+    // if(!((""+senderInfo.address.split(".")[3]) in knownReceiversFull)) {
+    if(!knownReceiversFull.has(senderInfo.address)) {
+        // console.log("unknown receiver "+senderInfo.address);
         addNewReceiver(udpSock, senderInfo.address);
     }
     else {
@@ -60,18 +104,21 @@ udpSock.on('listening', () => {
     console.log(`server listening on ${address.address}:${address.port}`);
 });
 
-udpSock.bind(53212, "192.168.1.218", () => {
-    udpSock.setBroadcast(true);
-});
+if(udpBindAddress === null) {
+    udpSock.bind({port: 53212}, () => {
+        udpSock.setBroadcast(true);
+    });
+}
+else {
+    udpSock.bind({port: 53212, address: udpBindAddress}, () => {
+        udpSock.setBroadcast(true);
+    });
+}
 
-// sendCyclicRequest(udpSock, "192.168.1.116");
 sendCyclicRequest(udpSock);
-// sendCyclicRequest(udpSock, "192.168.1.255");
 
-if(pushIntervalHandle !== null)
-    clearInterval(pushIntervalHandle);
-
-pushIntervalHandle = setInterval(sendCyclicRequest, 270, udpSock)
+pushIntervalHandleA = setInterval(sendCyclicRequest, 270000, udpSock);
+pushIntervalHandleB = setInterval(sendConfigRequest, 3540000, udpSock);
 
 function sendCyclicRequest(conn, addr=null) {
     let pushMsg = "Push 300 500 7\r";
@@ -93,10 +140,17 @@ function sendCallback(err) {
 }
 
 function addNewReceiver(conn, address) {
-    knownReceiversFull[address]  = {"name": "unknown"};
-    knownReceiversShort[address] = {"name": "unknown"};
+    // knownReceiversFull[address.split(".")[3]]  = {"name": "unknown"};
+    knownReceiversFull.set(address, {"name": "unknown"});
+    // knownReceiversShort[address.split(".")[3]] = {"name": "unknown"};
+    knownReceiversShort.set(address, {"name": "unknown"});
+
+    knownReceiversFull = new Map([...knownReceiversFull.entries()].sort(compareIPv4mapKeys));
+    knownReceiversShort = new Map([...knownReceiversShort.entries()].sort(compareIPv4mapKeys));
+
+
     sendConfigRequest(conn, address);
-    // console.log("added receiver "+address);
+    // console.log("added receiver "+address.split(".")[3]);
     sendCyclicRequest(conn, address);
 }
 
@@ -181,17 +235,36 @@ function updateReceiver(address, msg) {
     receivedItemsFull.lastUpdate = Date.now();
     receivedItemsShort.lastUpdate = Date.now();
 
-    knownReceiversFull[address] = Object.assign({}, knownReceiversFull[address], receivedItemsFull);
-    knownReceiversShort[address] = Object.assign({}, knownReceiversShort[address], receivedItemsShort);
+    // knownReceiversFull[address.split(".")[3]] = Object.assign({}, knownReceiversFull[address], receivedItemsFull);
+    // knownReceiversShort[address.split(".")[3]] = Object.assign({}, knownReceiversShort[address], receivedItemsShort);
+    let newObj = Object.assign({}, knownReceiversFull.get(address), receivedItemsFull);
 
-    fs.writeFile('RxFull.json', JSON.stringify(knownReceiversFull), (err) => {
-        if(err !== null)
-            console.log("file write error: "+err);
-    });
-    fs.writeFile('RxShort.json', JSON.stringify(knownReceiversShort), (err) => {
-        if(err !== null)
-            console.log("file write error: "+err);
-    });
+    knownReceiversFull.set(address, newObj);
+    knownReceiversShort.set(address, Object.assign({}, knownReceiversShort.get(address), receivedItemsShort));
+
+    // fs.writeFile('RxFull.json', JSON.stringify([...knownReceiversFull]), (err) => {
+    //     if(err !== null)
+    //         console.log("file write error: "+err);
+    // });
+    // fs.writeFile('RxShort.json', JSON.stringify([...knownReceiversShort]), (err) => {
+    //     if(err !== null)
+    //         console.log("file write error: "+err);
+    // });
 
     // console.log(knownReceivers);
+}
+
+/* IP sort from https://stackoverflow.com/a/65950890 */
+function compareIPv4mapKeys(addrStrA, addrStrB) {
+    const numA = Number(
+        addrStrA[0].split('.')
+            .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))
+            .reduce((a, v) => ((a += v), a), 0)
+    );
+    const numB = Number(
+        addrStrB[0].split('.')
+            .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))
+            .reduce((a, v) => ((a += v), a), 0)
+    );
+    return numA - numB;
 }

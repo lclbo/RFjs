@@ -7,7 +7,7 @@
     --main-translucent-wbStyle: #762551AA;
 
     --main-bwStyle: #212121;
-    --main-translucent-bwStyle: #000000;
+    --main-translucent-bwStyle: #bbbbbbAA;
 
     --main-text-wbStyle: #fff6fb;
     --main-text-bwStyle: #ffffff;
@@ -142,6 +142,7 @@ body {
     top: 50%;
     left: 50%;
     background-color: var(--main-translucent);
+    color: var(--rx-text-warning);
     width: fit-content;
     height: 5rem;
     box-sizing: border-box;
