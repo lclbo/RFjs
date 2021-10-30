@@ -28,7 +28,7 @@
 
     --rx-battery-gt70-bwStyle: #bebebe;
     --rx-battery-gt30-bwStyle: #bebebe;
-    --rx-battery-gt10-bwStyle: #bebebe;
+    --rx-battery-gt10-bwStyle: gold;
     --rx-battery-leq10-bwStyle: red;
 
     --afMeter-wbStyle: #ed9152;

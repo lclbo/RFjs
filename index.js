@@ -1,3 +1,4 @@
+#!/usr/bin/env nodejs
 const dgram = require('dgram');
 const http = require('http');
 const fs = require('fs');
@@ -24,6 +25,8 @@ for (const netIdx in networkInterfaces) {
             continue;
         if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0")
             continue;
+        if(networkInterfaces[netIdx][addrIdx].address.includes("192.168.0")) //skip over default update interface
+            continue;
 
         udpBindAddress = networkInterfaces[netIdx][addrIdx].address;
         // console.log(udpBindAddress);
@@ -35,10 +38,12 @@ http.createServer(function(req, res){
 
     if(req.url.includes("RxShort.json")) {
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         return res.end(JSON.stringify([...knownReceiversShort]));
     }
     else if(req.url.includes("RxFull.json")) {
         res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
         return res.end(JSON.stringify([...knownReceiversFull]));
     }
     else if(req.url.includes("rf.js")) {
@@ -48,6 +53,7 @@ http.createServer(function(req, res){
                 return res.end("File not readable.");
             }
             res.statusCode = 200;
+            res.setHeader("Content-Type", "application/javascript");
             return res.end(data);
         });
     }
@@ -57,8 +63,21 @@ http.createServer(function(req, res){
                 res.statusCode = 500;
                 return res.end("File not readable.");
             }
+            res.setHeader("Content-Type", "text/css");
             res.statusCode = 200;
             return res.end(data);
+        });
+    }
+    else if(req.url.includes("icon.png")) {
+        let stream = fs.createReadStream("www/icon.png");
+        stream.on("open", function() {
+            res.setHeader("Content-Type", "image/png");
+            res.statusCode = 200;
+            stream.pipe(res);
+        });
+        stream.on("error", function() {
+            res.statusCode = 500;
+            res.end("File not readable.");
         });
     }
     else if(req.url === "/" || req.url.includes("index.html")) {
@@ -121,7 +140,7 @@ pushIntervalHandleA = setInterval(sendCyclicRequest, 270000, udpSock);
 pushIntervalHandleB = setInterval(sendConfigRequest, 3540000, udpSock);
 
 function sendCyclicRequest(conn, addr=null) {
-    let pushMsg = "Push 300 500 7\r";
+    let pushMsg = "Push 300 100 7\r";
     if(addr === null)
         addr = "255.255.255.255";
     conn.send(pushMsg, 0, (pushMsg.length), 53212, addr, sendCallback);
