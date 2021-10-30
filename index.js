@@ -14,7 +14,7 @@ let knownReceiversShort = {};
 
 http.createServer(function(req, res){
     res.writeHead(200, {"content-Type":'application/json'});
-    if(req.url.includes("short.json"))
+    if(req.url.includes("RxShort.json"))
         res.end(JSON.stringify(knownReceiversShort));
     else
         res.end(JSON.stringify(knownReceiversFull));
@@ -111,11 +111,9 @@ function updateReceiver(address, msg) {
         switch(item[0].toLowerCase()) {
             case "name":
                 receivedItemsFull.name = val.toString().replace(item[0]+" ",'').trim();
-                receivedItemsShort.name = receivedItemsFull.name;
                 break;
             case "frequency":
                 receivedItemsFull.freq = (parseFloat(item[1]) / 1000).toFixed(3);
-                receivedItemsShort.freq = receivedItemsFull.freq;
                 break;
             case "squelch":
                 receivedItemsFull.squelch = item[1];
@@ -135,11 +133,12 @@ function updateReceiver(address, msg) {
                 let muteFlag  = parseInt(item[1],10);
                 let pilotFlag = parseInt(item[2],10);
                 receivedItemsFull.flags = {
-                    lastCycleMute:    (muteFlag & 1 > 0),
-                    lastCycleTxMute:  (muteFlag & 2 > 0),
-                    lastCycleRfMute:  (muteFlag & 4 > 0),
-                    lastCycleRxMute:  (muteFlag & 8 > 0)
+                    lastCycleMute:    !!(muteFlag & 1 > 0),
+                    lastCycleTxMute:  !!(muteFlag & 2 > 0),
+                    lastCycleRfMute:  !!(muteFlag & 4 > 0),
+                    lastCycleRxMute:  !!(muteFlag & 8 > 0)
                 };
+                receivedItemsShort.flags = receivedItemsFull.flags;
                 receivedItemsFull.lastCyclePilot = pilotFlag;
                 receivedItemsShort.lastCyclePilot = pilotFlag;
                 break;
@@ -159,12 +158,12 @@ function updateReceiver(address, msg) {
                 receivedItemsFull.af = {
                     currentPeak: parseInt(item[1],10),
                     currentHold: parseInt(item[2],10),
-                    mute:    (muteState & 1 > 0),
-                    txMute:  (muteState & 2 > 0),
-                    rfMute:  (muteState & 4 > 0),
-                    rxMute:  (muteState & 8 > 0)
+                    mute:    !!(muteState & 1 > 0),
+                    txMute:  !!(muteState & 2 > 0),
+                    rfMute:  !!(muteState & 4 > 0),
+                    rxMute:  !!(muteState & 8 > 0)
                 }
-                receivedItemsShort.af = receivedItemsFull.af;
+                receivedItemsShort.af = {currentPeak: receivedItemsFull.af.currentPeak, currentHold: receivedItemsFull.af.currentHold};
                 break;
             case "bat":
                 receivedItemsFull.battery = {
@@ -175,6 +174,7 @@ function updateReceiver(address, msg) {
                 break;
             case "msg":
                 receivedItemsFull.warningString = item[1].toString().replace("_", " ");
+                receivedItemsShort.warningString = receivedItemsFull.warningString;
                 break;
         }
     });

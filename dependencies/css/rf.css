@@ -1,7 +1,94 @@
 /* FollowJS */
-.container-fluid {
-    height: 100vh;
+:root {
+    --main-bg-wbStyle: #212529;
+    --main-bg-bwStyle: #000000;
+
+    --main-wbStyle: #762551;
+    --main-translucent-wbStyle: #762551AA;
+
+    --main-bwStyle: #212121;
+    --main-translucent-bwStyle: #000000;
+
+    --main-text-wbStyle: #fff6fb;
+    --main-text-bwStyle: #ffffff;
+
+    --main-text-warning-wbStyle: #ff0000;
+    --main-text-warning-bwStyle: #ffffff;
+
+    --rx-bg-highlight-wbStyle: #760000;
+    --rx-bg-highlight-bwStyle: #760000A0;
+
+    --rx-battery-wbStyle: #ba92a8;
+    --rx-battery-bwStyle: #eeeeee;
+
+    --rx-battery-gt70-wbStyle: darkgreen;
+    --rx-battery-gt30-wbStyle: green;
+    --rx-battery-gt10-wbStyle: gold;
+    --rx-battery-leq10-wbStyle: red;
+
+    --rx-battery-gt70-bwStyle: #bebebe;
+    --rx-battery-gt30-bwStyle: #bebebe;
+    --rx-battery-gt10-bwStyle: #bebebe;
+    --rx-battery-leq10-bwStyle: red;
+
+    --afMeter-wbStyle: #ed9152;
+    --afPeak-wbStyle: #f56c07;
+    --rfMeter-wbStyle: #d16454;
+    --rfMeterMax-wbStyle: #8b5e5f;
+
+    --afMeter-bwStyle: #7c7c7c;
+    --afPeak-bwStyle: #494949;
+    --rfMeter-bwStyle: #bebebe;
+    --rfMeterMax-bwStyle: #7c7c7c;
+
+
+    /* Default */
+    --main-bg: var(--main-bg-wbStyle);
+    --main: var(--main-wbStyle);
+    --main-translucent: var(--main-translucent-wbStyle);
+
+    --rx-bg: var(--main-wbStyle);
+    --rx-bg-highlight: var(--rx-bg-highlight-wbStyle);
+    --rx-text: var(--main-text-wbStyle);
+    --rx-text-warning: var(--main-text-warning-wbStyle);
+
+    --rx-battery: var(--rx-battery-wbStyle);
+    --rx-battery-gt70: var(--rx-battery-gt70-wbStyle);
+    --rx-battery-gt30: var(--rx-battery-gt30-wbStyle);
+    --rx-battery-gt10: var(--rx-battery-gt10-wbStyle);
+    --rx-battery-leq10: var(--rx-battery-leq10-wbStyle);
+
+    --afMeter: var(--afMeter-wbStyle);
+    --afPeak: var(--afPeak-wbStyle);
+    --rfMeter: var(--rfMeter-wbStyle);
+    --rfMeterMax: var(--rfMeterMax-wbStyle);
 }
+
+@media (orientation: portrait) {
+    :root {
+        --main-bg: var(--main-bg-bwStyle);
+        --main: var(--main-bwStyle);
+        --main-translucent: var(--main-translucent-bwStyle);
+
+        --rx-bg: var(--main-bwStyle);
+        --rx-bg-highlight: var(--rx-bg-highlight-bwStyle);
+        --rx-text: var(--main-text-wbStyle);
+        --rx-text-warning: var(--main-text-warning-bwStyle);
+
+        --rx-battery: var(--rx-battery-bwStyle);
+        --rx-battery-gt70: var(--rx-battery-gt70-bwStyle);
+        --rx-battery-gt30: var(--rx-battery-gt30-bwStyle);
+        --rx-battery-gt10: var(--rx-battery-gt10-bwStyle);
+        --rx-battery-leq10: var(--rx-battery-leq10-bwStyle);
+
+        --afMeter: var(--afMeter-bwStyle);
+        --afPeak: var(--afPeak-bwStyle);
+        --rfMeter: var(--rfMeter-bwStyle);
+        --rfMeterMax: var(--rfMeterMax-bwStyle);
+    }
+}
+
+
 .hidden {
     display: none !important;
 }
@@ -16,10 +103,6 @@
     50% { opacity: 0.2 }
 }
 
-.lh200 {
-    line-height: 200px !important;
-}
-
 *, *::before, *::after {
     box-sizing: border-box;
     padding: 0;
@@ -32,7 +115,7 @@ body {
 }
 
 #mainOuter {
-    background-color: #212529;
+    background-color: var(--main-bg);
     text-align: center;
     align-content: center;
     align-items: center;
@@ -44,7 +127,7 @@ body {
 #mainArea {
     width: calc(100vw - .75rem);
     height: calc(100vh - .75rem);
-    border: .25rem solid #762551;
+    border: .25rem solid var(--main);
     box-sizing: border-box;
     overflow: auto;
     position: absolute;
@@ -58,7 +141,7 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
-    background-color: #762551AA;
+    background-color: var(--main-translucent);
     width: fit-content;
     height: 5rem;
     box-sizing: border-box;
@@ -90,16 +173,20 @@ body {
 }
 
 .rx {
-    /*background-color: #9e850e;*/
-    /*background-color: #fff6fb;*/
-    background-color: #762551;
+    background-color: var(--main);
     animation: rxBgToNormal 1s 1;
     /*width: calc(12.5% - .5rem);*/
     width: calc(20% - .5rem);
     margin: .25rem;
     float: left;
-    color: #fff6fb;
+    color: var(--rx-text);
     padding: .5rem;
+}
+@media(orientation: portrait) {
+    .rx {
+        width: calc(50% - .5rem);
+        line-height: 1.5;
+    }
 }
 
 .rxInactive {
@@ -107,8 +194,9 @@ body {
 }
 
 .rxHighlight {
-    background-color: #760000;
-    animation: rxBgToRed 2.5s 1;
+    background-color: var(--rx-bg-highlight);
+    /*animation: rxBgToRed 2.5s 1;*/
+    animation: rxBgFlashRed 1.5s ease-in-out infinite;
 }
 
 .meterBox {
@@ -143,19 +231,19 @@ body {
 }
 
 .rfMeterBox div:nth-of-type(1) {
-    background-color: #d16454;
+    background-color: var(--rfMeter);
 }
 .rfMeterBox div:nth-of-type(2) {
     /*background-color: #8b5e5f;*/
-    background: repeating-linear-gradient( -45deg, #8B5E5F44 0px, #8B5E5F44 2px, #8b5e5f 3px, #8b5e5f 13px, #8B5E5F44 15px);
+    background-color: var(--rfMeterMax);
 }
 
 .afMeterBox div:nth-of-type(1) {
     background: transparent;
-    border-right: 3px solid #f56c07;
+    border-right: 3px solid var(--afPeak);
 }
 .afMeterBox div:nth-of-type(2) {
-    background-color: #ed9152;
+    background-color: var(--afMeter);
 }
 
 .meterBox span {
@@ -189,34 +277,42 @@ body {
     line-height: 1rem;
 }
 .bottomBox div:last-of-type {
-    color: red;
+    color: var(--rx-text-warning);
 }
 
 @keyframes rxBgPulseRed {
     0%,100% {
-        background-color: #762551;
+        background-color: var(--rx-bg);
     }
     50% {
-        /*background-color: #BB0000;*/
-        background-color: #760000;
+        background-color: var(--rx-bg-highlight);
+    }
+}
+
+@keyframes rxBgFlashRed {
+    0%,49% {
+        background-color: var(--rx-bg);
+    }
+    50%,100% {
+        background-color: var(--rx-bg-highlight);
     }
 }
 
 @keyframes rxBgToRed {
     from {
-        background-color: #762551;
+        background-color: var(--rx-bg);
     }
     to {
-        background-color: #760000;
+        background-color: var(--rx-bg-highlight);
     }
 }
 
 @keyframes rxBgToNormal {
     from {
-        background-color: #760000;
+        background-color: var(--rx-bg-highlight);
     }
     to {
-        background-color: #762551;
+        background-color: var(--rx-bg);
     }
 }
 
