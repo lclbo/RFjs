@@ -10,7 +10,7 @@ const udpBindAddress = findSuitableNetworkAddressForUDP(os);
 let httpServerPort = 80;
 
 let pushIntervalHandleA;
-let pushIntervalHandleB;
+// let pushIntervalHandleB;
 let removeIntervalHandle;
 
 let removeReceiversAfterNoUpdateInSeconds = 60;
@@ -119,11 +119,11 @@ else {
 
 sendCyclicRequest(udpSock);
 
-pushIntervalHandleA = setInterval(sendCyclicRequest, 270000, udpSock);
-pushIntervalHandleB = setInterval(sendConfigRequest, 3540000, udpSock);
+pushIntervalHandleA = setInterval(sendCyclicRequest, 80000, udpSock);
+// pushIntervalHandleB = setInterval(sendConfigRequest, 3540000, udpSock);
 
 function sendCyclicRequest(conn, addr=null) {
-    let pushMsg = "Push 300 100 7\r";
+    let pushMsg = "Push 100 100 7\r";
     if(addr === null)
         addr = "255.255.255.255";
     conn.send(pushMsg, 0, (pushMsg.length), 53212, addr, sendCallback);
@@ -157,7 +157,7 @@ function removeUnconnectedReceivers() {
     }
 }
 
-removeIntervalHandle = setInterval(removeUnconnectedReceivers, Math.ceil(removeReceiversAfterNoUpdateInSeconds * 1000 / 2));
+removeIntervalHandle = setInterval(removeUnconnectedReceivers, Math.ceil(removeReceiversAfterNoUpdateInSeconds * 1000 / 4));
 
 function addNewReceiver(conn, address) {
     knownReceiversFull.set(address, {"name": "unknown"});
@@ -193,7 +193,7 @@ function updateReceiver(address, msg) {
                 break;
             case "rf1":
                 receivedItemsFull.rf1 = {min: parseInt(item[1],10), max: parseInt(item[2],10), active: (item[3] === "1")};
-                receivedItemsShort.rf1 = {min: receivedItemsFull.rf2.min, max: receivedItemsFull.rf1.max};
+                receivedItemsShort.rf1 = {min: receivedItemsFull.rf1.min, max: receivedItemsFull.rf1.max};
                 break;
             case "rf2":
                 receivedItemsFull.rf2 = {min: parseInt(item[1],10), max: parseInt(item[2],10), active: (item[3] === "1")};

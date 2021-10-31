@@ -146,12 +146,16 @@ body {
     color: var(--rx-text-warning);
     min-width: 40vw;
     width: fit-content;
-    min-height: 5rem;
+    height: 5rem;
     box-sizing: border-box;
     font-size: 2.5rem;
     text-align: center;
     padding: 1rem 2rem 1rem 2rem;
     z-index: 1000;
+}
+
+#loadErrorOverlay {
+    height: 10rem !important;
 }
 
 .floating {
@@ -160,19 +164,19 @@ body {
 
 @keyframes moveX {
     from {
-        left: 0;
-        transform: translateX(0);
+        left: 20vw;
+        /*transform: translateX(0);*/
         /*-webkit-transform: translateX(0);*/
     }
     to {
-        left: calc(100% - 40vw);
-        transform: translateX(-100%);
+        left: calc(100% - 20vw);
+        /*transform: translateX(-100%);*/
         /*-webkit-transform: translateX(-100%);*/
     }
 }
 @keyframes moveY {
-    from {top: 0;}
-    to {top: calc(100% - 5rem);}
+    from {top: 2.5rem;}
+    to {top: calc(100% - 2.5rem);}
 }
 @keyframes pulseAnimation {
     from { opacity: 1; }

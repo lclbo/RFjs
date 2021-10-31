@@ -102,7 +102,7 @@ function updateState(data, full) {
         if(document.getElementById("rx-"+key) === null) {
             foundUnknownReceiver = true;
             rxArea.insertAdjacentHTML('beforeend', "" +
-                "<div class='rx' id='rx-"+key+"'>" +
+                "<div class='rx rxInactive' id='rx-"+key+"'>" +
                 "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
                 "<div style='font-weight: bold; font-size: 1.2em; float: left; overflow: hidden;'>&nbsp;</div>" +
                 "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'><span></span><small>MHz</small></div>" +
