@@ -5,43 +5,28 @@ const fs = require('fs');
 const os = require('os');
 
 const udpSock = dgram.createSocket('udp4');
-let udpBindAddress = null;
+const udpBindAddress = findSuitableNetworkAddressForUDP(os);
 
 let httpServerPort = 80;
 
 let pushIntervalHandleA;
 let pushIntervalHandleB;
+let removeIntervalHandle;
+
+let removeReceiversAfterNoUpdateInSeconds = 60;
 
 let knownReceiversFull  = new Map();
 let knownReceiversShort = new Map();
 
-const networkInterfaces = os.networkInterfaces();
-// console.log(networkInterfaces);
-for (const netIdx in networkInterfaces) {
-    for(const addrIdx in networkInterfaces[netIdx]) {
-        if(networkInterfaces[netIdx][addrIdx].family === "IPv6")
-            continue;
-        if(networkInterfaces[netIdx][addrIdx].address.includes("127.0.0.1"))
-            continue;
-        if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0")
-            continue;
-        if(networkInterfaces[netIdx][addrIdx].address.includes("192.168.0")) //skip over default update interface
-            continue;
 
-        udpBindAddress = networkInterfaces[netIdx][addrIdx].address;
-        // console.log(udpBindAddress);
-    }
-}
 
 http.createServer(function(req, res){
-    // res.writeHead(200, {"content-Type":'application/json'});
-
-    if(req.url.includes("RxShort.json")) {
+    if(req.url.includes("rxShort.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         return res.end(JSON.stringify([...knownReceiversShort]));
     }
-    else if(req.url.includes("RxFull.json")) {
+    else if(req.url.includes("rxFull.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
         return res.end(JSON.stringify([...knownReceiversFull]));
@@ -91,7 +76,6 @@ http.createServer(function(req, res){
         });
     }
     else {
-        // res.writeHead(404, {"content-Type":'application/json'});
         res.statusCode = 404;
         // console.log("Request to >"+req.url+"<");
         return res.end("I have no idea what you are looking for. This file does not exist.");
@@ -108,7 +92,6 @@ udpSock.on('message', (msg, senderInfo) => {
     // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
     // console.log(msgDebug);
 
-    // if(!((""+senderInfo.address.split(".")[3]) in knownReceiversFull)) {
     if(!knownReceiversFull.has(senderInfo.address)) {
         // console.log("unknown receiver "+senderInfo.address);
         addNewReceiver(udpSock, senderInfo.address);
@@ -158,18 +141,32 @@ function sendCallback(err) {
         console.log("Msg send error: "+err);
 }
 
+function removeUnconnectedReceivers() {
+    let now = Date.now();
+    let deletedAny = false;
+    knownReceiversFull.forEach(function(rx, key) {
+        if(now > (rx.lastUpdate + removeReceiversAfterNoUpdateInSeconds * 1000)) {
+            deletedAny = true;
+            knownReceiversFull.delete(key);
+            knownReceiversShort.delete(key);
+        }
+    });
+    if(deletedAny) {
+        knownReceiversFull = new Map([...knownReceiversFull.entries()].sort(compareIPv4mapKeys));
+        knownReceiversShort = new Map([...knownReceiversShort.entries()].sort(compareIPv4mapKeys));
+    }
+}
+
+removeIntervalHandle = setInterval(removeUnconnectedReceivers, Math.ceil(removeReceiversAfterNoUpdateInSeconds * 1000 / 2));
+
 function addNewReceiver(conn, address) {
-    // knownReceiversFull[address.split(".")[3]]  = {"name": "unknown"};
     knownReceiversFull.set(address, {"name": "unknown"});
-    // knownReceiversShort[address.split(".")[3]] = {"name": "unknown"};
     knownReceiversShort.set(address, {"name": "unknown"});
 
     knownReceiversFull = new Map([...knownReceiversFull.entries()].sort(compareIPv4mapKeys));
     knownReceiversShort = new Map([...knownReceiversShort.entries()].sort(compareIPv4mapKeys));
 
-
     sendConfigRequest(conn, address);
-    // console.log("added receiver "+address.split(".")[3]);
     sendCyclicRequest(conn, address);
 }
 
@@ -179,7 +176,7 @@ function updateReceiver(address, msg) {
 
     let blocks = msg.toString().split(/[\n\r]/g);
 
-    blocks.forEach((val, idx) => {
+    blocks.forEach((val ) => {
         let item = val.toString().split(" ");
         switch(item[0].toLowerCase()) {
             case "name":
@@ -196,11 +193,11 @@ function updateReceiver(address, msg) {
                 break;
             case "rf1":
                 receivedItemsFull.rf1 = {min: parseInt(item[1],10), max: parseInt(item[2],10), active: (item[3] === "1")};
-                receivedItemsShort.rf1 = {min: parseInt(item[1],10), max: parseInt(item[2],10)};
+                receivedItemsShort.rf1 = {min: receivedItemsFull.rf2.min, max: receivedItemsFull.rf1.max};
                 break;
             case "rf2":
                 receivedItemsFull.rf2 = {min: parseInt(item[1],10), max: parseInt(item[2],10), active: (item[3] === "1")};
-                receivedItemsShort.rf2 = {min: parseInt(item[1],10), max: parseInt(item[2],10)};
+                receivedItemsShort.rf2 = {min: receivedItemsFull.rf2.min, max: receivedItemsFull.rf2.max};
                 break;
             case "states":
                 let muteFlag  = parseInt(item[1],10);
@@ -211,7 +208,7 @@ function updateReceiver(address, msg) {
                     lastCycleRfMute:  !!(muteFlag & 4 > 0),
                     lastCycleRxMute:  !!(muteFlag & 8 > 0)
                 };
-                receivedItemsShort.flags = receivedItemsFull.flags;
+                receivedItemsShort.flags = {lastCycleMute: !!(muteFlag & 1 > 0)};
                 receivedItemsFull.lastCyclePilot = pilotFlag;
                 receivedItemsShort.lastCyclePilot = pilotFlag;
                 break;
@@ -254,8 +251,6 @@ function updateReceiver(address, msg) {
     receivedItemsFull.lastUpdate = Date.now();
     receivedItemsShort.lastUpdate = Date.now();
 
-    // knownReceiversFull[address.split(".")[3]] = Object.assign({}, knownReceiversFull[address], receivedItemsFull);
-    // knownReceiversShort[address.split(".")[3]] = Object.assign({}, knownReceiversShort[address], receivedItemsShort);
     let newObj = Object.assign({}, knownReceiversFull.get(address), receivedItemsFull);
 
     knownReceiversFull.set(address, newObj);
@@ -270,16 +265,38 @@ function updateReceiver(address, msg) {
     //         console.log("file write error: "+err);
     // });
 
-    // console.log(knownReceivers);
+}
+
+function findSuitableNetworkAddressForUDP(os) {
+    const networkInterfaces = os.networkInterfaces();
+
+    for (const netIdx in networkInterfaces) {
+        for(const addrIdx in networkInterfaces[netIdx]) {
+            if(networkInterfaces[netIdx][addrIdx].family === "IPv6")
+                continue;
+            if(networkInterfaces[netIdx][addrIdx].address.includes("127.0.0.1"))
+                continue;
+            if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0")
+                continue;
+            if(networkInterfaces[netIdx][addrIdx].address.includes("192.168.0")) //skip over default update interface
+                continue;
+
+            return networkInterfaces[netIdx][addrIdx].address;
+        }
+    }
+
+    return null;
 }
 
 /* IP sort from https://stackoverflow.com/a/65950890 */
 function compareIPv4mapKeys(addrStrA, addrStrB) {
+    // noinspection CommaExpressionJS
     const numA = Number(
         addrStrA[0].split('.')
             .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))
             .reduce((a, v) => ((a += v), a), 0)
     );
+    // noinspection CommaExpressionJS
     const numB = Number(
         addrStrB[0].split('.')
             .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))

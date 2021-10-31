@@ -3,19 +3,42 @@ var isLegacyClient = !!(navigator.userAgent.match(/(iPad)/));
 var defaultIntervalMs = (isLegacyClient) ? 250 : 100;
 var fullEveryCycles = Math.ceil(2000/defaultIntervalMs);    //every 2s full refresh
 var iterationCount = 0;
+var errorCount = 0;
+var errorThreshold = 10;
+
+var numberOfReceivers = 0;
 
 function loadJson(url, callback) {
     var xhr = new XMLHttpRequest();
     // xhr.overrideMimeType("application/json");
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function () {
-        if (xhr.readyState === 4 && xhr.status === 200) {
-            // .open will NOT return a value
-            // but simply returns undefined in async mode so use a callback
-            callback(xhr.responseText);
+        if (this.readyState === 4) {
+            if(this.status === 200) {
+                if(errorCount !== 0) {
+                    errorCount = 0;
+                    evaluateError();
+                }
+                // .open will NOT return a value
+                // but simply returns undefined in async mode so use a callback
+                callback(this.responseText);
+            }
+            else {
+                errorCount++;
+                evaluateError();
+            }
         }
     }
     xhr.send(null);
+}
+
+function evaluateError() {
+    if(errorCount >= errorThreshold) {
+        document.getElementById("loadErrorOverlay").classList.remove("hidden");
+    }
+    else {
+        document.getElementById("loadErrorOverlay").classList.add("hidden");
+    }
 }
 
 function loadState() {
@@ -25,17 +48,17 @@ function loadState() {
     iterationCount++;
 
     if(full) {
-        loadJson("RxFull.json",function(response) {
+        loadJson("rxFull.json",function(response) {
             updateState(JSON.parse(response),true);
         });
     }
     else {
-        loadJson("RxShort.json",function(response) {
+        loadJson("rxShort.json",function(response) {
             updateState(JSON.parse(response),false);
         });
     }
     // if(full) {
-    //     fetch("RxFull.json")
+    //     fetch("rxFull.json")
     //         .then(response => response.json())
     //         .then(data => {
     //             updateState(data, true);
@@ -43,7 +66,7 @@ function loadState() {
     //         .catch(err => console.log(err))
     // }
     // else {
-    //     fetch("RxShort.json")
+    //     fetch("rxShort.json")
     //         .then(response => response.json())
     //         .then(data => {
     //             updateState(data, false);
@@ -52,22 +75,32 @@ function loadState() {
     // }
 }
 
+function clearAllReceivers() {
+    document.getElementById("rfArea").innerHTML = "";
+    iterationCount = 0; //immediately load full dataset
+}
+
 function updateState(data, full) {
-    // console.log(data);
     var rxArea = document.getElementById("rfArea");
 
-    if(data.length === 0)
+    if(data.length !== numberOfReceivers) {
+        clearAllReceivers();
+    }
+    numberOfReceivers = data.length;
+
+    if(numberOfReceivers === 0)
         document.getElementById('noDevicesOverlay').classList.remove("hidden");
     else
         document.getElementById('noDevicesOverlay').classList.add("hidden");
 
-
+    var foundUnknownReceiver = false;
     // for(const [key,rx] of data) { //ECMA6 only
     data.forEach(function(elem) {
         var rx = elem[1];
         var key = elem[0];
 
         if(document.getElementById("rx-"+key) === null) {
+            foundUnknownReceiver = true;
             rxArea.insertAdjacentHTML('beforeend', "" +
                 "<div class='rx' id='rx-"+key+"'>" +
                 "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
@@ -187,6 +220,9 @@ function updateState(data, full) {
             rxObject.children[1].children[2].children[3].textContent = (rx.warningString === "OK" || rx.warningString === "RF Mute") ? " " : rx.warningString;
         }
     });
+
+    if(foundUnknownReceiver)
+        iterationCount = 0; //immediately load full dataset
 
     return true;
 }

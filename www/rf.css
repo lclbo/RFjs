@@ -4,10 +4,10 @@
     --main-bg-bwStyle: #000000;
 
     --main-wbStyle: #762551;
-    --main-translucent-wbStyle: #762551AA;
+    --main-translucent-wbStyle: rgba(118, 37, 81, 0.67);
 
     --main-bwStyle: #212121;
-    --main-translucent-bwStyle: #bbbbbbAA;
+    --main-translucent-bwStyle: rgba(187, 187, 187, 0.67);
 
     --main-text-wbStyle: #fff6fb;
     --main-text-bwStyle: #ffffff;
@@ -141,22 +141,35 @@ body {
     position: absolute;
     top: 50%;
     left: 50%;
+    transform: translateX(-50%) translateY(-50%);
     background-color: var(--main-translucent);
     color: var(--rx-text-warning);
+    min-width: 40vw;
     width: fit-content;
-    height: 5rem;
+    min-height: 5rem;
     box-sizing: border-box;
     font-family: sans-serif;
     font-size: 2.5rem;
     text-align: center;
     padding: 1rem 2rem 1rem 2rem;
     z-index: 1000;
+}
+
+.floating {
     animation: moveX 21s linear 0s infinite alternate, moveY 16s linear 0s infinite alternate;
 }
 
 @keyframes moveX {
-    from {left: 0; transform: translateX(0);}
-    to {left: 100%; transform: translateX(-100%);}
+    from {
+        left: 0;
+        transform: translateX(0);
+        /*-webkit-transform: translateX(0);*/
+    }
+    to {
+        left: calc(100% - 40vw);
+        transform: translateX(-100%);
+        /*-webkit-transform: translateX(-100%);*/
+    }
 }
 @keyframes moveY {
     from {top: 0;}
