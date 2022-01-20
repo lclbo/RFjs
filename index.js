@@ -92,18 +92,16 @@ udpSock.on('message', (msg, senderInfo) => {
     // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
     // console.log(msgDebug);
 
-    if(!knownReceiversFull.has(senderInfo.address)) {
-        // console.log("unknown receiver "+senderInfo.address);
+    if(!knownReceiversFull.has(senderInfo.address))
         addNewReceiver(udpSock, senderInfo.address);
-    }
-    else {
+    else
         updateReceiver(senderInfo.address, msg);
-    }
+
 });
 
 udpSock.on('listening', () => {
     const address = udpSock.address();
-    console.log(`server listening on ${address.address}:${address.port}`);
+    console.log('server listening on '+address.address+':'+address.port);
 });
 
 if(udpBindAddress === null) {
