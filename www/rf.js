@@ -1,7 +1,15 @@
+/*
+ * Client side script for RFjs
+ *
+ * ES5 code compatible (down to iOS9)
+ * for older devices, transformations are replaced with width modifications
+ * and the refresh rate is reduced
+ */
+
 var reloadStateHandle = null;
 var isLegacyClient = !!(navigator.userAgent.match(/(iPad)/));
 var defaultIntervalMs = (isLegacyClient) ? 250 : 100;
-var fullEveryCycles = Math.ceil(2000/defaultIntervalMs);    //every 2s full refresh
+var fullEveryCycles = Math.ceil(2000/defaultIntervalMs);    //every 2s full refresh, otherwise only compact set
 var iterationCount = 0;
 var errorCount = 0;
 var errorThreshold = 10;
@@ -10,7 +18,6 @@ var numberOfReceivers = 0;
 
 function loadJson(url, callback) {
     var xhr = new XMLHttpRequest();
-    // xhr.overrideMimeType("application/json");
     xhr.open('GET', url, true);
     xhr.onreadystatechange = function () {
         if (this.readyState === 4) {
@@ -19,8 +26,6 @@ function loadJson(url, callback) {
                     errorCount = 0;
                     evaluateError();
                 }
-                // .open will NOT return a value
-                // but simply returns undefined in async mode so use a callback
                 callback(this.responseText);
             }
             else {
@@ -42,8 +47,6 @@ function evaluateError() {
 }
 
 function loadState() {
-    // $.getJSON("http://localhost:8080/short.json", function (data) {
-
     var full = (iterationCount % fullEveryCycles === 0);
     iterationCount++;
 
@@ -57,6 +60,8 @@ function loadState() {
             updateState(JSON.parse(response),false);
         });
     }
+    // ES6-compatible alternative to above section
+    //
     // if(full) {
     //     fetch("rxFull.json")
     //         .then(response => response.json())
@@ -102,48 +107,54 @@ function updateState(data, full) {
         if(document.getElementById("rx-"+key) === null) {
             foundUnknownReceiver = true;
             rxArea.insertAdjacentHTML('beforeend', "" +
-                "<div class='rx rxInactive' id='rx-"+key+"'>" +
-                "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
-                "<div style='font-weight: bold; font-size: 1.2em; float: left; overflow: hidden;'>&nbsp;</div>" +
-                "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'><span></span><small>MHz</small></div>" +
-                "</div>" +
-                "<div style='clear: both;'>" +
-                "<div style='float: left; padding-right: .5rem;'>" +
-                "<svg width='25' height='66'><g transform='scale(1,-1)'>" +
-                "<rect x='0' y='-100%' height='0%' width='100%' fill='red' fill-opacity='1'></rect>" +
-                "<rect x='0' y='-100%' width='100%' height='90%' stroke-width='5' stroke='var(--rx-battery)' fill-opacity='0'></rect>" +
-                "<rect x='25%' y='-5%' height='10%' width='50%' fill='var(--rx-battery)'></rect>" +
-                "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='150%' fill='var(--rx-battery)' style='visibility: hidden; transform: scaleY(-1);'>?</text>" +
-                "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='200%' fill='var(--rx-text-warning)' font-weight='bolder' style='visibility: hidden; transform: scaleY(-1);'>!</text>" +
-                "</g></svg>" +
-                "</div>" +
-                "<div style='align-content: start; overflow: hidden;'>" +
-                "<div style='align-content: start;'>" +
-                "<div class='meterBox rfMeterBox'>" +
-                "<span>I</span>" +
-                "<div></div>" +
-                "<div></div>" +
-                "</div>" +
-                "<div class='meterBox rfMeterBox' style='margin-top: .1rem;'>" +
-                "<span>II</span>" +
-                "<div></div>" +
-                "<div></div>" +
-                "</div>" +
-                "</div>" +
-                "<div class='meterBox afMeterBox' style='margin-top: .25rem;'>" +
-                "<span></span>" +
-                "<div></div>" +
-                "<div></div>" +
-                "</div>" +
-                "</div>" +
-                "<div class='bottomBox'>" +
-                "<div>P</div>" +
-                "<div></div>" +
-                "<div>&#x26A0;</div>" +
-                "<div></div>" +
-                "</div>" +
-                "</div>" +
-                "</div>");
+                "<div class='rx rxInactive' id='rx-" + key + "'>" +
+                    "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
+                        "<div style='font-weight: bold; font-size: 1.2em; float: left; overflow: hidden;'>&nbsp;</div>" +
+                        "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'>" +
+                            "<span></span>" +
+                            "<small>MHz</small>" +
+                        "</div>" +
+                    "</div>" +
+                    "<div style='clear: both;'>" +
+                        "<div style='float: left; padding-right: .5rem;'>" +
+                            "<svg width='25' height='66'>" +
+                                "<g transform='scale(1,-1)'>" +
+                                    "<rect x='0' y='-100%' height='0%' width='100%' fill='red' fill-opacity='1'></rect>" +
+                                    "<rect x='0' y='-100%' width='100%' height='90%' stroke-width='5' stroke='var(--rx-battery)' fill-opacity='0'></rect>" +
+                                    "<rect x='25%' y='-5%' height='10%' width='50%' fill='var(--rx-battery)'></rect>" +
+                                    "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='150%' fill='var(--rx-battery)' style='visibility: hidden; transform: scaleY(-1);'>?</text>" +
+                                    "<text x='50%' y='50%' dominant-baseline='middle' text-anchor='middle' font-size='200%' fill='var(--rx-text-warning)' font-weight='bolder' style='visibility: hidden; transform: scaleY(-1);'>!</text>" +
+                                "</g>" +
+                            "</svg>" +
+                        "</div>" +
+                        "<div style='align-content: start; overflow: hidden;'>" +
+                            "<div style='align-content: start;'>" +
+                                "<div class='meterBox rfMeterBox'>" +
+                                    "<span>I</span>" +
+                                    "<div></div>" +
+                                    "<div></div>" +
+                                "</div>" +
+                                "<div class='meterBox rfMeterBox' style='margin-top: .1rem;'>" +
+                                    "<span>II</span>" +
+                                    "<div></div>" +
+                                    "<div></div>" +
+                                "</div>" +
+                            "</div>" +
+                            "<div class='meterBox afMeterBox' style='margin-top: .25rem;'>" +
+                                "<span></span>" +
+                                "<div></div>" +
+                                "<div></div>" +
+                            "</div>" +
+                        "</div>" +
+                        "<div class='bottomBox'>" +
+                            "<div>P</div>" +
+                            "<div></div>" +
+                            "<div>&#x26A0;</div>" +
+                            "<div></div>" +
+                        "</div>" +
+                    "</div>" +
+                "</div>"
+            );
         }
         else {
             var rxObject = document.getElementById("rx-"+key);
@@ -184,25 +195,31 @@ function updateState(data, full) {
             }
 
             if(isLegacyClient) {
+                // RF min and max for I and II
                 rxObject.children[1].children[1].children[0].children[0].children[1].style.width = Math.min(100,(rx.rf1.min))+"%";
                 rxObject.children[1].children[1].children[0].children[0].children[2].style.width = Math.min(100,(rx.rf1.max))+"%";
                 rxObject.children[1].children[1].children[0].children[1].children[1].style.width = Math.min(100,(rx.rf2.min))+"%";
                 rxObject.children[1].children[1].children[0].children[1].children[2].style.width = Math.min(100,(rx.rf2.max))+"%";
+                // AF meter + AF peak
                 rxObject.children[1].children[1].children[1].children[1].style.width = Math.min(100,(rx.af.currentHold))+"%";
                 rxObject.children[1].children[1].children[1].children[2].style.width = Math.min(100,(rx.af.currentPeak))+"%";
             }
             else {
+                // RF min and max for I and II
                 rxObject.children[1].children[1].children[0].children[0].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf1.min))+"%)";
                 rxObject.children[1].children[1].children[0].children[0].children[2].style.transform = "scaleX("+Math.min(100,(rx.rf1.max))+"%)";
-
                 rxObject.children[1].children[1].children[0].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
                 rxObject.children[1].children[1].children[0].children[1].children[2].style.transform = "scaleX("+Math.min(100,(rx.rf2.max))+"%)";
-
+                // AF meter + AF peak
                 rxObject.children[1].children[1].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.af.currentHold))+"%)";
                 rxObject.children[1].children[1].children[1].children[2].style.transform = "scaleX("+Math.min(100,(rx.af.currentPeak))+"%)";
-
             }
 
+            /* pilot flag:
+                 * 0: never received pilot signal during since last message
+                 * 1: always received ...
+                 * 2: received pilot at least once since last message
+             */
             switch (rx.lastCyclePilot) {
                 case 0:
                     rxObject.children[1].children[2].children[0].textContent = " ";
@@ -211,6 +228,7 @@ function updateState(data, full) {
                     rxObject.children[1].children[2].children[0].textContent = "P";
                     break;
                 case 2:
+                default:
                     rxObject.children[1].children[2].children[0].textContent = "?";
                     break;
             }
@@ -240,10 +258,10 @@ document.addEventListener('DOMContentLoaded', function () {
     // ready function
     conditionalLog("execute ready function");
     if(reloadStateHandle === null)
-        reloadStateHandle = window.setInterval(loadState,defaultIntervalMs); //15
+        reloadStateHandle = window.setInterval(loadState,defaultIntervalMs);
 
-    // window.setTimeout(stopRefresh, 5000);
-    document.getElementById("loadingBeacon").addEventListener('animationiteration', function() {
-        this.style.animation = '';
-    }, false);
+    // // window.setTimeout(stopRefresh, 5000);
+    // document.getElementById("loadingBeacon").addEventListener('animationiteration', function() {
+    //     this.style.animation = '';
+    // }, false);
 });

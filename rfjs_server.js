@@ -1,107 +1,56 @@
-#!/usr/bin/env nodejs
+#!/usr/bin/env node
 const dgram = require('dgram');
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
 
+let httpServerPort = 80;
+let removeReceiversAfterNoUpdateInSeconds = 60;
+
+
 const udpSock = dgram.createSocket('udp4');
 const udpBindAddress = findSuitableNetworkAddressForUDP(os);
 
-let httpServerPort = 80;
+const httpServer = http.createServer();
+httpServer.listen(httpServerPort);
 
-let pushIntervalHandleA;
-// let pushIntervalHandleB;
+let pushIntervalHandle;
 let removeIntervalHandle;
-
-let removeReceiversAfterNoUpdateInSeconds = 60;
 
 let knownReceiversFull  = new Map();
 let knownReceiversShort = new Map();
 
+httpServer.on("listening", () => {
+    let httpAddrInfo = httpServer.address();
+    if(typeof httpAddrInfo === "object")
+        console.log("Webapp available at "+httpAddrInfo.address+":"+httpAddrInfo.port);
+});
 
+udpSock.on("listening", () => {
+    const address = udpSock.address();
+    console.log('MCP server listening on '+address.address+':'+address.port);
+});
 
-http.createServer(function(req, res){
-    if(req.url.includes("rxShort.json")) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify([...knownReceiversShort]));
-    }
-    else if(req.url.includes("rxFull.json")) {
-        res.statusCode = 200;
-        res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify([...knownReceiversFull]));
-    }
-    else if(req.url.includes("rf.js")) {
-        fs.readFile("www/rf.js", function(err, data) {
-            if (err) {
-                res.statusCode = 500;
-                return res.end("File not readable.");
-            }
-            res.statusCode = 200;
-            res.setHeader("Content-Type", "application/javascript");
-            return res.end(data);
-        });
-    }
-    else if(req.url.includes("rf.css")) {
-        fs.readFile("www/rf.css", function(err, data) {
-            if (err) {
-                res.statusCode = 500;
-                return res.end("File not readable.");
-            }
-            res.setHeader("Content-Type", "text/css");
-            res.statusCode = 200;
-            return res.end(data);
-        });
-    }
-    else if(req.url.includes("icon.png")) {
-        let stream = fs.createReadStream("www/icon.png");
-        stream.on("open", function() {
-            res.setHeader("Content-Type", "image/png");
-            res.statusCode = 200;
-            stream.pipe(res);
-        });
-        stream.on("error", function() {
-            res.statusCode = 500;
-            res.end("File not readable.");
-        });
-    }
-    else if(req.url === "/" || req.url.includes("index.html")) {
-        fs.readFile("www/index.html", function(err, data) {
-            if (err) {
-                res.statusCode = 500;
-                return res.end("File not readable.");
-            }
-            res.statusCode = 200;
-            return res.end(data);
-        });
-    }
-    else {
-        res.statusCode = 404;
-        // console.log("Request to >"+req.url+"<");
-        return res.end("I have no idea what you are looking for. This file does not exist.");
-    }
-}).listen(httpServerPort);
-
-
-udpSock.on('error', (err) => {
-    console.log('server error: \n' + err.stack);
+udpSock.on("error", (err) => {
+    console.log("udp socket server error: \n" + err.stack);
     udpSock.close();
 });
+
+httpServer.on("error", (err) => {
+    console.log("http server error: \n" + err.stack);
+    httpServer.close();
+});
+
+httpServer.on("request", httpServerRequestResponder);
+
 
 udpSock.on('message', (msg, senderInfo) => {
     // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
     // console.log(msgDebug);
-
     if(!knownReceiversFull.has(senderInfo.address))
         addNewReceiver(udpSock, senderInfo.address);
     else
         updateReceiver(senderInfo.address, msg);
-
-});
-
-udpSock.on('listening', () => {
-    const address = udpSock.address();
-    console.log('server listening on '+address.address+':'+address.port);
 });
 
 if(udpBindAddress === null) {
@@ -117,8 +66,7 @@ else {
 
 sendCyclicRequest(udpSock);
 
-pushIntervalHandleA = setInterval(sendCyclicRequest, 80000, udpSock);
-// pushIntervalHandleB = setInterval(sendConfigRequest, 3540000, udpSock);
+pushIntervalHandle = setInterval(sendCyclicRequest, 80000, udpSock);
 
 function sendCyclicRequest(conn, addr=null) {
     let pushMsg = "Push 100 100 7\r";
@@ -301,4 +249,67 @@ function compareIPv4mapKeys(addrStrA, addrStrB) {
             .reduce((a, v) => ((a += v), a), 0)
     );
     return numA - numB;
+}
+
+
+function httpServerRequestResponder(req,res) {
+    if(req.url.includes("rxShort.json")) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        return res.end(JSON.stringify([...knownReceiversShort]));
+    }
+    else if(req.url.includes("rxFull.json")) {
+        res.statusCode = 200;
+        res.setHeader("Content-Type", "application/json");
+        return res.end(JSON.stringify([...knownReceiversFull]));
+    }
+    else if(req.url.includes("rf.js")) {
+        fs.readFile("www/rf.js", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.statusCode = 200;
+            res.setHeader("Content-Type", "application/javascript");
+            return res.end(data);
+        });
+    }
+    else if(req.url.includes("rf.css")) {
+        fs.readFile("www/rf.css", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.setHeader("Content-Type", "text/css");
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else if(req.url.includes("icon.png")) {
+        let stream = fs.createReadStream("www/icon.png");
+        stream.on("open", function() {
+            res.setHeader("Content-Type", "image/png");
+            res.statusCode = 200;
+            stream.pipe(res);
+        });
+        stream.on("error", function() {
+            res.statusCode = 500;
+            res.end("File not readable.");
+        });
+    }
+    else if(req.url === "/" || req.url.includes("index.html")) {
+        fs.readFile("www/index.html", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else {
+        res.statusCode = 404;
+        // console.log("Request to >"+req.url+"<");
+        return res.end("I have no idea what you are looking for. This file does not exist.");
+    }
 }

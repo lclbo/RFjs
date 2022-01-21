@@ -1,12 +1,16 @@
 {
   "name": "rfjs",
   "version": "1.1.0",
-  "description": "Status monitor for wireless microphone systems that implement Sennheiser MCP (Media Control Protocol)",
-  "main": "index.js",
+  "description": "Status monitor for wireless microphone systems which support Sennheiser MCP (Media Control Protocol)",
+  "homepage": "https://github.com/lclbo/RFjs",
+  "bugs": "https://github.com/lclbo/RfJS/issues",
+  "license": "MIT",
+  "author": "Lennart Clausing <dev@lclausing.com>",
+  "files": ["www/*"],
+  "main": "rfjs_server.js",
   "scripts": {
+    "start": "node rfjs_server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "keywords": [],
-  "author": "Lennart Clausing",
-  "license": "MIT"
+  "keywords": []
 }
