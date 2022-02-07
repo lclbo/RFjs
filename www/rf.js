@@ -160,13 +160,6 @@ function updateState(data, full) {
             var rxObject = document.getElementById("rx-"+key);
 
             if(full) {
-                // document.getElementById("loadingBeacon").style.opacity = "1";
-                // document.getElementById("loadingBeacon").style.animation = "";
-                // // document.getElementById("loadingBeacon").style.animation = "fadeOutAnimation 100ms 1";
-                // window.requestAnimationFrame(function(time) {
-                //     document.getElementById("loadingBeacon").style.animation = "fadeOutAnimation 100ms 1";
-                // });
-
                 rxObject.children[0].children[0].textContent = rx.name;
                 rxObject.children[0].children[1].children[0].textContent = rx.freq;
                 if(rx.battery.percentage > 70)
@@ -194,8 +187,8 @@ function updateState(data, full) {
                     rxObject.classList.remove("rxHighlight");
             }
 
-            if(isLegacyClient) {
-                // RF min and max for I and II
+            if(isLegacyClient) { //scale is not supported on iOS9
+                // RF min and max for antenna I and II
                 rxObject.children[1].children[1].children[0].children[0].children[1].style.width = Math.min(100,(rx.rf1.min))+"%";
                 rxObject.children[1].children[1].children[0].children[0].children[2].style.width = Math.min(100,(rx.rf1.max))+"%";
                 rxObject.children[1].children[1].children[0].children[1].children[1].style.width = Math.min(100,(rx.rf2.min))+"%";
@@ -205,7 +198,7 @@ function updateState(data, full) {
                 rxObject.children[1].children[1].children[1].children[2].style.width = Math.min(100,(rx.af.currentPeak))+"%";
             }
             else {
-                // RF min and max for I and II
+                // RF min and max for antenna I and II
                 rxObject.children[1].children[1].children[0].children[0].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf1.min))+"%)";
                 rxObject.children[1].children[1].children[0].children[0].children[2].style.transform = "scaleX("+Math.min(100,(rx.rf1.max))+"%)";
                 rxObject.children[1].children[1].children[0].children[1].children[1].style.transform = "scaleX("+Math.min(100,(rx.rf2.min))+"%)";
@@ -255,13 +248,7 @@ function conditionalLog(msg) {
 }
 
 document.addEventListener('DOMContentLoaded', function () {
-    // ready function
-    conditionalLog("execute ready function");
+    document.getElementById("loadingBeacon").style.animationPlayState = "running";
     if(reloadStateHandle === null)
         reloadStateHandle = window.setInterval(loadState,defaultIntervalMs);
-
-    // // window.setTimeout(stopRefresh, 5000);
-    // document.getElementById("loadingBeacon").addEventListener('animationiteration', function() {
-    //     this.style.animation = '';
-    // }, false);
 });

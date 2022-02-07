@@ -121,7 +121,8 @@ body {
     height: calc(100vh - .75rem);
     border: .25rem solid var(--main);
     box-sizing: border-box;
-    overflow: auto;
+    overflow-x: hidden;
+    overflow-y: auto;
     position: absolute;
     left: 50%;
     top: 50%;
@@ -136,18 +137,19 @@ body {
     transform: translateX(-50%) translateY(-50%);
     background-color: var(--main-translucent);
     color: var(--rx-text-warning);
-    min-width: 40vw;
     width: fit-content;
-    height: 5rem;
+    height: fit-content;
+    min-width: 40vw;
+    min-height: 4rem;
     box-sizing: border-box;
-    font-size: 2.5rem;
+    font-size: 2rem;
     text-align: center;
     padding: 1rem 2rem 1rem 2rem;
     z-index: 1000;
 }
 
-#loadErrorOverlay {
-    height: 10rem !important;
+.mainAreaHugeWarningTextOverlay a {
+    color: var(--rx-text-warning);
 }
 
 .blink {
@@ -313,5 +315,8 @@ body {
     right: 10px;
     bottom: 10px;
     opacity: 0;
-    animation: fadeOutAnimation 500ms 1;
+    animation-duration: 500ms;
+    /*animation-iteration-count: 1;*/
+    animation-name: fadeOutAnimation;
+    animation-play-state: paused;
 }

@@ -202,6 +202,7 @@ function updateReceiver(address, msg) {
     knownReceiversFull.set(address, newObj);
     knownReceiversShort.set(address, Object.assign({}, knownReceiversShort.get(address), receivedItemsShort));
 
+    /* This section allows storing the results to a local file for offline debugging without receivers present */
     // fs.writeFile('RxFull.json', JSON.stringify([...knownReceiversFull]), (err) => {
     //     if(err !== null)
     //         console.log("file write error: "+err);
