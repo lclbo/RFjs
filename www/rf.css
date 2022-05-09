@@ -1,90 +1,49 @@
 /* rf.css */
+@import "rfColors.css";
+
 :root {
-    --main-bg-wbStyle: #212529;
-    --main-bg-bwStyle: #000000;
+    --main-bg: var(--main-bg-primaryStyle);
+    --main: var(--main-primaryStyle);
+    --main-translucent: var(--main-translucent-primaryStyle);
 
-    --main-wbStyle: #762551;
-    --main-translucent-wbStyle: rgba(118, 37, 81, 0.67);
+    --rx-bg: var(--main-primaryStyle);
+    --rx-bg-highlight: var(--rx-bg-highlight-primaryStyle);
+    --rx-text: var(--main-text-primaryStyle);
+    --rx-text-warning: var(--main-text-warning-primaryStyle);
 
-    --main-bwStyle: #212121;
-    --main-translucent-bwStyle: rgba(187, 187, 187, 0.67);
+    --rx-battery: var(--rx-battery-primaryStyle);
+    --rx-battery-gt70: var(--rx-battery-gt70-primaryStyle);
+    --rx-battery-gt30: var(--rx-battery-gt30-primaryStyle);
+    --rx-battery-gt10: var(--rx-battery-gt10-primaryStyle);
+    --rx-battery-leq10: var(--rx-battery-leq10-primaryStyle);
 
-    --main-text-wbStyle: #fff6fb;
-    --main-text-bwStyle: #ffffff;
-
-    --main-text-warning-wbStyle: #ff0000;
-    --main-text-warning-bwStyle: #ffffff;
-
-    --rx-bg-highlight-wbStyle: #760000;
-    --rx-bg-highlight-bwStyle: #760000A0;
-
-    --rx-battery-wbStyle: #ba92a8;
-    --rx-battery-bwStyle: #eeeeee;
-
-    --rx-battery-gt70-wbStyle: darkgreen;
-    --rx-battery-gt30-wbStyle: green;
-    --rx-battery-gt10-wbStyle: gold;
-    --rx-battery-leq10-wbStyle: red;
-
-    --rx-battery-gt70-bwStyle: #bebebe;
-    --rx-battery-gt30-bwStyle: #bebebe;
-    --rx-battery-gt10-bwStyle: gold;
-    --rx-battery-leq10-bwStyle: red;
-
-    --afMeter-wbStyle: #ed9152;
-    --afPeak-wbStyle: #f56c07;
-    --rfMeter-wbStyle: #d16454;
-    --rfMeterMax-wbStyle: #8b5e5f;
-
-    --afMeter-bwStyle: #7c7c7c;
-    --afPeak-bwStyle: #494949;
-    --rfMeter-bwStyle: #bebebe;
-    --rfMeterMax-bwStyle: #7c7c7c;
-
-
-    /* Default */
-    --main-bg: var(--main-bg-wbStyle);
-    --main: var(--main-wbStyle);
-    --main-translucent: var(--main-translucent-wbStyle);
-
-    --rx-bg: var(--main-wbStyle);
-    --rx-bg-highlight: var(--rx-bg-highlight-wbStyle);
-    --rx-text: var(--main-text-wbStyle);
-    --rx-text-warning: var(--main-text-warning-wbStyle);
-
-    --rx-battery: var(--rx-battery-wbStyle);
-    --rx-battery-gt70: var(--rx-battery-gt70-wbStyle);
-    --rx-battery-gt30: var(--rx-battery-gt30-wbStyle);
-    --rx-battery-gt10: var(--rx-battery-gt10-wbStyle);
-    --rx-battery-leq10: var(--rx-battery-leq10-wbStyle);
-
-    --afMeter: var(--afMeter-wbStyle);
-    --afPeak: var(--afPeak-wbStyle);
-    --rfMeter: var(--rfMeter-wbStyle);
-    --rfMeterMax: var(--rfMeterMax-wbStyle);
+    --afMeter: var(--afMeter-primaryStyle);
+    --afPeak: var(--afPeak-primaryStyle);
+    --rfMeter: var(--rfMeter-primaryStyle);
+    --rfMeterMax: var(--rfMeterMax-primaryStyle);
 }
 
 @media (orientation: portrait) {
     :root {
-        --main-bg: var(--main-bg-bwStyle);
-        --main: var(--main-bwStyle);
-        --main-translucent: var(--main-translucent-bwStyle);
+        --main-bg: var(--main-bg-secondaryStyle);
+        --main: var(--main-secondaryStyle);
+        --main-translucent: var(--main-translucent-secondaryStyle);
 
-        --rx-bg: var(--main-bwStyle);
-        --rx-bg-highlight: var(--rx-bg-highlight-bwStyle);
-        --rx-text: var(--main-text-wbStyle);
-        --rx-text-warning: var(--main-text-warning-bwStyle);
+        --rx-bg: var(--main-secondaryStyle);
+        --rx-bg-highlight: var(--rx-bg-highlight-secondaryStyle);
+        --rx-text: var(--main-text-primaryStyle);
+        --rx-text-warning: var(--main-text-warning-secondaryStyle);
 
-        --rx-battery: var(--rx-battery-bwStyle);
-        --rx-battery-gt70: var(--rx-battery-gt70-bwStyle);
-        --rx-battery-gt30: var(--rx-battery-gt30-bwStyle);
-        --rx-battery-gt10: var(--rx-battery-gt10-bwStyle);
-        --rx-battery-leq10: var(--rx-battery-leq10-bwStyle);
+        --rx-battery: var(--rx-battery-secondaryStyle);
+        --rx-battery-gt70: var(--rx-battery-gt70-secondaryStyle);
+        --rx-battery-gt30: var(--rx-battery-gt30-secondaryStyle);
+        --rx-battery-gt10: var(--rx-battery-gt10-secondaryStyle);
+        --rx-battery-leq10: var(--rx-battery-leq10-secondaryStyle);
 
-        --afMeter: var(--afMeter-bwStyle);
-        --afPeak: var(--afPeak-bwStyle);
-        --rfMeter: var(--rfMeter-bwStyle);
-        --rfMeterMax: var(--rfMeterMax-bwStyle);
+        --afMeter: var(--afMeter-secondaryStyle);
+        --afPeak: var(--afPeak-secondaryStyle);
+        --rfMeter: var(--rfMeter-secondaryStyle);
+        --rfMeterMax: var(--rfMeterMax-secondaryStyle);
     }
 }
 
@@ -106,6 +65,7 @@ body {
     /*line-height: 1.5;*/
 }
 
+/* *** main area *** */
 #mainOuter {
     background-color: var(--main-bg);
     text-align: center;
@@ -130,6 +90,7 @@ body {
     padding: .25rem;
 }
 
+/* *** overlays *** */
 .mainAreaHugeWarningTextOverlay {
     position: absolute;
     top: 50%;
@@ -152,58 +113,12 @@ body {
     color: var(--rx-text-warning);
 }
 
-.blink {
-    animation: blink 1500ms step-end infinite;
+.mainAreaHugeWarningTextOverlay button {
+    color: var(--rx-text-warning);
+    font-size: 1.5rem;
 }
 
-.floating {
-    animation: moveX 21s linear 0s infinite alternate, moveY 16s linear 0s infinite alternate;
-}
-
-@keyframes blink {
-    50% { opacity: 0.2 }
-}
-
-@keyframes moveX {
-    from { left: 20vw; }
-    to   { left: calc(100% - 20vw); }
-}
-@keyframes moveY {
-    from { top: 2.5rem; }
-    to   { top: calc(100% - 2.5rem); }
-}
-
-@keyframes pulseAnimation {
-    from { opacity: 1; }
-    50%  { opacity: 0.4; }
-    to   { opacity: 1; }
-}
-
-@keyframes fadeOutAnimation {
-    from { opacity: 1; }
-    to   { opacity: 0; }
-}
-
-@keyframes rxBgPulseRed {
-    0%,100% { background-color: var(--rx-bg); }
-    50%     { background-color: var(--rx-bg-highlight); }
-}
-
-@keyframes rxBgFlashRed {
-    0%,49%   { background-color: var(--rx-bg); }
-    50%,100% { background-color: var(--rx-bg-highlight); }
-}
-
-@keyframes rxBgToRed {
-    from { background-color: var(--rx-bg); }
-    to   { background-color: var(--rx-bg-highlight); }
-}
-
-@keyframes rxBgToNormal {
-    from { background-color: var(--rx-bg-highlight); }
-    to   { background-color: var(--rx-bg); }
-}
-
+/* *** single receiver elements *** */
 .rx {
     background-color: var(--main);
     animation: rxBgToNormal 1s 1;
@@ -213,10 +128,24 @@ body {
     color: var(--rx-text);
     padding: .5rem;
 }
-@media(orientation: portrait) {
+@media (orientation: portrait) {
     .rx {
         width: calc(50% - .5rem);
         line-height: 1.5;
+    }
+}
+@media (max-width: 765px) {
+    @media (orientation: portrait) {
+        .rx {
+            width: calc(100% - .5rem);
+            line-height: 1.5;
+        }
+    }
+    @media (orientation: landscape) {
+        .rx {
+            width: calc(33.33% - .5rem);
+            line-height: 1.5;
+        }
     }
 }
 
@@ -310,6 +239,7 @@ body {
     color: var(--rx-text-warning);
 }
 
+/* *** ether elements *** */
 #loadingBeacon {
     position: absolute;
     right: 10px;
@@ -319,4 +249,58 @@ body {
     /*animation-iteration-count: 1;*/
     animation-name: fadeOutAnimation;
     animation-play-state: paused;
+}
+
+
+/* *** animations *** */
+.blink {
+    animation: blink 1500ms step-end infinite;
+}
+
+.floating {
+    animation: moveX 21s linear 0s infinite alternate, moveY 16s linear 0s infinite alternate;
+}
+
+@keyframes blink {
+    50% { opacity: 0.2 }
+}
+
+@keyframes moveX {
+    from { left: 20vw; }
+    to   { left: calc(100% - 20vw); }
+}
+@keyframes moveY {
+    from { top: 2.5rem; }
+    to   { top: calc(100% - 2.5rem); }
+}
+
+@keyframes pulseAnimation {
+    from { opacity: 1; }
+    50%  { opacity: 0.4; }
+    to   { opacity: 1; }
+}
+
+@keyframes fadeOutAnimation {
+    from { opacity: 1; }
+    to   { opacity: 0; }
+}
+
+@keyframes rxBgPulseRed {
+    0%,100% { background-color: var(--rx-bg); }
+    50%     { background-color: var(--rx-bg-highlight); }
+}
+
+@keyframes rxBgFlashRed {
+    0%,49%   { background-color: var(--rx-bg); }
+    50%,100% { background-color: var(--rx-bg-highlight); }
+}
+
+@keyframes rxBgToRed {
+    from { background-color: var(--rx-bg); }
+    to   { background-color: var(--rx-bg-highlight); }
+}
+
+@keyframes rxBgToNormal {
+    from { background-color: var(--rx-bg-highlight); }
+    to   { background-color: var(--rx-bg); }
 }

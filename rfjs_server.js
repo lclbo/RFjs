@@ -1,4 +1,43 @@
 #!/usr/bin/env node
+const DO_DEBUG = true;
+const dbg_data = '{\n' +
+    '  "192.168.1.103":{"name":"WB 03XXX","freq":"684.000","squelch":"15","afOut":"18","lastUpdate":1635089614363,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":0},"warningString":"Low Batt"},\n' +
+    '  "192.168.1.121":{"name":"WB 21","freq":"640.350","squelch":"15","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":false},"rf2":{"min":0,"max":0,"active":true},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"2","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":30},"warningString":"OK"},\n' +
+    '  "192.168.1.111":{"name":"WB 11","freq":"678.000","squelch":"15","afOut":"18","lastUpdate":1635089614365,"rf1":{"min":70,"max":85,"active":true},"rf2":{"min":60,"max":90,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":40,"currentHold":60,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":70},"warningString":"OK"},\n' +
+    '  "192.168.1.119":{"name":"WB 19","freq":"643.725","squelch":"15","afOut":"18","lastUpdate":1635089614366,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":104,"currentHold":60,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":100},"warningString":"OK"},\n' +
+    '  "192.168.1.108":{"name":"WB 08","freq":"679.050","squelch":"15","afOut":"18","lastUpdate":1635089614365,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":103,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"TX Mute"},\n' +
+    '  "192.168.1.115":{"name":"WB 15","freq":"642.775","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.118":{"name":"WB 18","freq":"641.975","squelch":"15","afOut":"18","lastUpdate":1635089614364,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"AF Peak"},\n' +
+    '  "192.168.1.107":{"name":"WB 07","freq":"684.450","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":2,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.102":{"name":"WB 02","freq":"673.350","squelch":"11","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.109":{"name":"WB 09","freq":"670.650","squelch":"15","afOut":"18","lastUpdate":1635089614385,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.122":{"name":"WB 22","freq":"643.350","squelch":"15","afOut":"18","lastUpdate":1635089614079,"rf1":{"min":0,"max":0,"active":false},"rf2":{"min":0,"max":0,"active":true},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"2","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.125":{"name":"WB 25","freq":"638.150","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.105":{"name":"WB 05","freq":"678.400","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.104":{"name":"WB 04","freq":"681.975","squelch":"9","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.120":{"name":"WB 20","freq":"639.000","squelch":"15","afOut":"18","lastUpdate":1635089614366,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.113":{"name":"WB 13","freq":"671.275","squelch":"15","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.114":{"name":"WB 14","freq":"685.200","squelch":"15","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.116":{"name":"WB 16","freq":"639.325","squelch":"15","afOut":"18","lastUpdate":1635089614400,"rf1":{"min":114,"max":114,"active":true},"rf2":{"min":106,"max":106,"active":false},"flags":{"lastCycleMute":0,"lastCycleTxMute":0,"lastCycleRfMute":0,"lastCycleRxMute":0},"lastCyclePilot":1,"rf":{"current":114,"antenna":"1","pilot":true},"af":{"currentPeak":0,"currentHold":0,"mute":0,"txMute":0,"rfMute":0,"rxMute":0},"battery":{"known":true,"percentage":30},"warningString":"OK"},\n' +
+    '  "192.168.1.117":{"name":"WB 17","freq":"640.825","squelch":"15","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.106":{"name":"WB 06","freq":"680.325","squelch":"15","afOut":"18","lastUpdate":1635089614371,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.101":{"name":"WB 01","freq":"638.450","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.112":{"name":"WB 12","freq":"644.250","squelch":"15","afOut":"18","lastUpdate":1635089614374,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.110":{"name":"WB 10","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.201":{"name":"WB 01","freq":"638.450","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.202":{"name":"WB 12","freq":"644.250","squelch":"15","afOut":"18","lastUpdate":1635089614374,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
+    '  "192.168.1.203":{"name":"WB 10","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"}\n' +
+    '}';
+let dbgRcv = JSON.parse(dbg_data);
+let dbgMap = new Map();
+Object.entries(dbgRcv).forEach(entry => {
+    const [key,val] = entry;
+    dbgMap.set(key.replace('"',''), val);
+});
+dbgMap = new Map([...dbgMap.entries()].sort(compareIPv4mapKeys));
+let dbg_str = JSON.stringify([...dbgMap]);
+
+
 const dgram = require('dgram');
 const http = require('http');
 const fs = require('fs');
@@ -87,6 +126,10 @@ function sendCallback(err) {
         console.log("Msg send error: "+err);
 }
 
+/**
+ * Check the Map of receivers and remove every entry that was last seen more than
+ * removeReceiversAfterNoUpdateInSeconds seconds ago
+ */
 function removeUnconnectedReceivers() {
     let now = Date.now();
     let deletedAny = false;
@@ -105,6 +148,11 @@ function removeUnconnectedReceivers() {
 
 removeIntervalHandle = setInterval(removeUnconnectedReceivers, Math.ceil(removeReceiversAfterNoUpdateInSeconds * 1000 / 4));
 
+/**
+ * Add a newly discovered receiver to the Map
+ * @param conn
+ * @param address
+ */
 function addNewReceiver(conn, address) {
     knownReceiversFull.set(address, {"name": "unknown"});
     knownReceiversShort.set(address, {"name": "unknown"});
@@ -116,6 +164,11 @@ function addNewReceiver(conn, address) {
     sendCyclicRequest(conn, address);
 }
 
+/**
+ *
+ * @param address
+ * @param msg
+ */
 function updateReceiver(address, msg) {
     let receivedItemsFull = {};
     let receivedItemsShort = {};
@@ -214,16 +267,23 @@ function updateReceiver(address, msg) {
 
 }
 
+/**
+ * Crawl IP addresses of all interfaces and return a suitable address to bind the MCP listener to
+ * @param os OS handle
+ * @returns {null|*} IP address or null
+ */
 function findSuitableNetworkAddressForUDP(os) {
     const networkInterfaces = os.networkInterfaces();
 
     for (const netIdx in networkInterfaces) {
         for(const addrIdx in networkInterfaces[netIdx]) {
-            if(networkInterfaces[netIdx][addrIdx].family === "IPv6")
+            if(networkInterfaces[netIdx][addrIdx].family === "IPv6") // MCP is v4 only
                 continue;
-            if(networkInterfaces[netIdx][addrIdx].address.includes("127.0.0.1"))
+            if(networkInterfaces[netIdx][addrIdx].address.includes("127.0.0.1")) // skip localhost
                 continue;
-            if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0")
+
+            /* THE FOLLOWING RULES ARE QUITE SPECIFIC FOR MY USE CASE, set your own! */
+            if(networkInterfaces[netIdx][addrIdx].netmask !== "255.255.255.0") // only look for /24 networks
                 continue;
             if(networkInterfaces[netIdx][addrIdx].address.includes("192.168.0")) //skip over default update interface
                 continue;
@@ -235,7 +295,12 @@ function findSuitableNetworkAddressForUDP(os) {
     return null;
 }
 
-/* IP sort from https://stackoverflow.com/a/65950890 */
+/**
+ * IPv4 address comparison, from https://stackoverflow.com/a/65950890
+ * @param addrStrA IP address A as string
+ * @param addrStrB IP address B as string
+ * @returns {number}
+ */
 function compareIPv4mapKeys(addrStrA, addrStrB) {
     // noinspection CommaExpressionJS
     const numA = Number(
@@ -252,17 +317,28 @@ function compareIPv4mapKeys(addrStrA, addrStrB) {
     return numA - numB;
 }
 
-
+/**
+ * HTTP request handler, delivers webapp files from file system and JSON files by parsing the status map
+ * @param req http request
+ * @param res http response
+ * @returns {*}
+ */
 function httpServerRequestResponder(req,res) {
     if(req.url.includes("rxShort.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify([...knownReceiversShort]));
+        if(DO_DEBUG)
+            return res.end(dbg_str);
+        else
+            return res.end(JSON.stringify([...knownReceiversShort]));
     }
     else if(req.url.includes("rxFull.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        return res.end(JSON.stringify([...knownReceiversFull]));
+        if(DO_DEBUG)
+            return res.end(dbg_str);
+        else
+            return res.end(JSON.stringify([...knownReceiversFull]));
     }
     else if(req.url.includes("rf.js")) {
         fs.readFile("www/rf.js", function(err, data) {
@@ -277,6 +353,17 @@ function httpServerRequestResponder(req,res) {
     }
     else if(req.url.includes("rf.css")) {
         fs.readFile("www/rf.css", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.setHeader("Content-Type", "text/css");
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else if(req.url.includes("rfColors.css")) {
+        fs.readFile("www/rfColors.css", function(err, data) {
             if (err) {
                 res.statusCode = 500;
                 return res.end("File not readable.");
