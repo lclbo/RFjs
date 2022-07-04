@@ -126,7 +126,11 @@ body {
     margin: .25rem;
     float: left;
     color: var(--rx-text);
-    padding: .5rem;
+    /*padding: .5rem;*/
+    padding-left: .5rem;
+    padding-right: .5rem;
+    padding-top: .25rem;
+    padding-bottom: .25rem;
 }
 @media (orientation: portrait) {
     .rx {
@@ -157,6 +161,48 @@ body {
     background-color: var(--rx-bg-highlight);
     /*animation: rxBgToRed 2.5s 1;*/
     animation: rxBgFlashRed 1.5s ease-in-out infinite;
+}
+
+.topBox {
+    align-content: baseline;
+    padding-bottom: .25rem;
+    overflow: hidden;
+}
+
+.topBoxName {
+    font-weight: bold;
+    font-size: 1.2rem;
+    line-height: 1.2rem;
+    float: left;
+    text-align: left;
+    max-width: 50%;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+.topBoxFreq {
+    font-family: monospace;
+    font-size: .7rem;
+    line-height: 1.2rem;
+    text-align: right;
+}
+
+.topBoxComment {
+    font-family: monospace;
+    font-size: .7rem;
+    line-height: .7rem;
+    height: .7rem;
+    width: 100%;
+    text-align: left;
+    white-space: nowrap;
+    overflow: hidden;
+}
+@media (orientation: portrait) {
+    .topBoxComment {
+        font-size: 1rem;
+        line-height: 1.5;
+        height: 1.5rem;
+    }
 }
 
 .meterBox {

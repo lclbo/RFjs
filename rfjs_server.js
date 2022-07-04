@@ -1,32 +1,8 @@
 #!/usr/bin/env node
-const DO_DEBUG = true;
+const DO_DEBUG = false;
 const dbg_data = '{\n' +
-    '  "192.168.1.103":{"name":"WB 03XXX","freq":"684.000","squelch":"15","afOut":"18","lastUpdate":1635089614363,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":0},"warningString":"Low Batt"},\n' +
-    '  "192.168.1.121":{"name":"WB 21","freq":"640.350","squelch":"15","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":false},"rf2":{"min":0,"max":0,"active":true},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"2","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":30},"warningString":"OK"},\n' +
-    '  "192.168.1.111":{"name":"WB 11","freq":"678.000","squelch":"15","afOut":"18","lastUpdate":1635089614365,"rf1":{"min":70,"max":85,"active":true},"rf2":{"min":60,"max":90,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":40,"currentHold":60,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":70},"warningString":"OK"},\n' +
-    '  "192.168.1.119":{"name":"WB 19","freq":"643.725","squelch":"15","afOut":"18","lastUpdate":1635089614366,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":104,"currentHold":60,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":100},"warningString":"OK"},\n' +
-    '  "192.168.1.108":{"name":"WB 08","freq":"679.050","squelch":"15","afOut":"18","lastUpdate":1635089614365,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":103,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"TX Mute"},\n' +
-    '  "192.168.1.115":{"name":"WB 15","freq":"642.775","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.118":{"name":"WB 18","freq":"641.975","squelch":"15","afOut":"18","lastUpdate":1635089614364,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"AF Peak"},\n' +
-    '  "192.168.1.107":{"name":"WB 07","freq":"684.450","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":2,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.102":{"name":"WB 02","freq":"673.350","squelch":"11","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.109":{"name":"WB 09","freq":"670.650","squelch":"15","afOut":"18","lastUpdate":1635089614385,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.122":{"name":"WB 22","freq":"643.350","squelch":"15","afOut":"18","lastUpdate":1635089614079,"rf1":{"min":0,"max":0,"active":false},"rf2":{"min":0,"max":0,"active":true},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"2","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.125":{"name":"WB 25","freq":"638.150","squelch":"15","afOut":"18","lastUpdate":1635089614368,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.105":{"name":"WB 05","freq":"678.400","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.104":{"name":"WB 04","freq":"681.975","squelch":"9","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.120":{"name":"WB 20","freq":"639.000","squelch":"15","afOut":"18","lastUpdate":1635089614366,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.113":{"name":"WB 13","freq":"671.275","squelch":"15","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.114":{"name":"WB 14","freq":"685.200","squelch":"15","afOut":"18","lastUpdate":1635089614367,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.116":{"name":"WB 16","freq":"639.325","squelch":"15","afOut":"18","lastUpdate":1635089614400,"rf1":{"min":114,"max":114,"active":true},"rf2":{"min":106,"max":106,"active":false},"flags":{"lastCycleMute":0,"lastCycleTxMute":0,"lastCycleRfMute":0,"lastCycleRxMute":0},"lastCyclePilot":1,"rf":{"current":114,"antenna":"1","pilot":true},"af":{"currentPeak":0,"currentHold":0,"mute":0,"txMute":0,"rfMute":0,"rxMute":0},"battery":{"known":true,"percentage":30},"warningString":"OK"},\n' +
-    '  "192.168.1.117":{"name":"WB 17","freq":"640.825","squelch":"15","afOut":"18","lastUpdate":1635089614369,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.106":{"name":"WB 06","freq":"680.325","squelch":"15","afOut":"18","lastUpdate":1635089614371,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.101":{"name":"WB 01","freq":"638.450","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.112":{"name":"WB 12","freq":"644.250","squelch":"15","afOut":"18","lastUpdate":1635089614374,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.110":{"name":"WB 10","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.201":{"name":"WB 01","freq":"638.450","squelch":"15","afOut":"18","lastUpdate":1635089614370,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.202":{"name":"WB 12","freq":"644.250","squelch":"15","afOut":"18","lastUpdate":1635089614374,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"},\n' +
-    '  "192.168.1.203":{"name":"WB 10","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"}\n' +
+    '  "10.0.0.1":{"name":"DEMO 001","comment":"This is demo receiver #1","freq":"684.000","squelch":"15","afOut":"18","lastUpdate":1635089614363,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":0},"warningString":"Low Batt"},\n' +
+    '  "10.0.0.2":{"name":"DEMO 002","comment":"And this is his companion, demo #2","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"}\n' +
     '}';
 let dbgRcv = JSON.parse(dbg_data);
 let dbgMap = new Map();
@@ -37,11 +13,13 @@ Object.entries(dbgRcv).forEach(entry => {
 dbgMap = new Map([...dbgMap.entries()].sort(compareIPv4mapKeys));
 let dbg_str = JSON.stringify([...dbgMap]);
 
+let commentsMap = new Map();
 
 const dgram = require('dgram');
 const http = require('http');
 const fs = require('fs');
 const os = require('os');
+const url = require("url");
 
 let httpServerPort = 80;
 let removeReceiversAfterNoUpdateInSeconds = 60;
@@ -49,6 +27,28 @@ let removeReceiversAfterNoUpdateInSeconds = 60;
 
 const udpSock = dgram.createSocket('udp4');
 const udpBindAddress = findSuitableNetworkAddressForUDP(os);
+
+const udpCommentSock = dgram.createSocket('udp4');
+// udpCommentSock.bind({port: 53210});
+udpCommentSock.on("listening", () => {
+    const address = udpCommentSock.address();
+    console.log('Comment annotation interface listening on '+address.address+':'+address.port);
+});
+udpCommentSock.on("error", (err) => {
+    console.log("Comment annotation interface server error: \n" + err.stack);
+    udpCommentSock.close();
+});
+udpCommentSock.on('message', (msg, senderInfo) => {
+    console.log("new comment message received");
+    let receivedCommentsMap;
+    try {
+        receivedCommentsMap = new Map(JSON.parse(msg.toString()));
+        commentsMap = new Map([...commentsMap, ...receivedCommentsMap]);
+    } catch(e) {
+        console.log("udp comment socket: comments JSON parse error: "+e);
+    }
+});
+
 
 const httpServer = http.createServer();
 httpServer.listen(httpServerPort);
@@ -96,16 +96,19 @@ if(udpBindAddress === null) {
     udpSock.bind({port: 53212}, () => {
         udpSock.setBroadcast(true);
     });
+    udpCommentSock.bind({port: 53210});
 }
 else {
     udpSock.bind({port: 53212, address: udpBindAddress}, () => {
         udpSock.setBroadcast(true);
     });
+    udpCommentSock.bind({port: 53210, address: udpBindAddress});
 }
 
-sendCyclicRequest(udpSock);
-
-pushIntervalHandle = setInterval(sendCyclicRequest, 80000, udpSock);
+if(!DO_DEBUG) {
+    sendCyclicRequest(udpSock);
+    pushIntervalHandle = setInterval(sendCyclicRequest, 80000, udpSock);
+}
 
 function sendCyclicRequest(conn, addr=null) {
     let pushMsg = "Push 100 100 7\r";
@@ -124,6 +127,27 @@ function sendConfigRequest(conn, addr=null) {
 function sendCallback(err) {
     if(err !== null)
         console.log("Msg send error: "+err);
+}
+
+
+/**
+ * Lookup the comment string for a given receiver address
+ * @param addr IP address string of the receiver
+ */
+function lookupReceiverComment(addr) {
+    let commentStr = "["+addr+"]"; //default comment string without lookup
+    if(commentsMap.has(addr)) {
+        try {
+            commentStr = commentsMap.get(addr);
+        } catch(e) {
+            console.log("comment lookup error.");
+        }
+    }
+    else {
+        commentsMap.set(addr, commentStr);
+    }
+
+    return commentStr;
 }
 
 /**
@@ -172,6 +196,8 @@ function addNewReceiver(conn, address) {
 function updateReceiver(address, msg) {
     let receivedItemsFull = {};
     let receivedItemsShort = {};
+
+    receivedItemsFull.comment = lookupReceiverComment(address);
 
     let blocks = msg.toString().split(/[\n\r]/g);
 
@@ -242,6 +268,7 @@ function updateReceiver(address, msg) {
                 receivedItemsShort.battery = receivedItemsFull.battery;
                 break;
             case "msg":
+                // console.log(item[1].toString());
                 receivedItemsFull.warningString = item[1].toString().replaceAll("_", " ");
                 receivedItemsShort.warningString = receivedItemsFull.warningString;
                 break;

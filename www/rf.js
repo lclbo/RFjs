@@ -108,12 +108,13 @@ function updateState(data, full) {
             foundUnknownReceiver = true;
             rxArea.insertAdjacentHTML('beforeend', "" +
                 "<div class='rx rxInactive' id='rx-" + key + "'>" +
-                    "<div style='align-content: baseline; padding-bottom: .25rem; overflow: hidden;'>" +
-                        "<div style='font-weight: bold; font-size: 1.2em; float: left; text-align: left; max-width: 50%; white-space: nowrap; overflow: hidden;'>&nbsp;</div>" +
-                        "<div style='font-family: monospace; font-size: .8rem; line-height: 1.2rem; text-align: right;'>" +
+                    "<div class='topBox'>" +
+                        "<div class='topBoxName'>&nbsp;</div>" +
+                        "<div class='topBoxFreq'>" +
                             "<span></span>" +
                             "<small>MHz</small>" +
                         "</div>" +
+                        "<div class='topBoxComment'></div>" +
                     "</div>" +
                     "<div style='clear: both;'>" +
                         "<div style='float: left; padding-right: .5rem;'>" +
@@ -161,6 +162,7 @@ function updateState(data, full) {
 
             if(full) {
                 rxObject.children[0].children[0].textContent = rx.name;
+                rxObject.children[0].children[2].textContent = rx.comment;
                 rxObject.children[0].children[1].children[0].textContent = rx.freq;
                 if(rx.battery.percentage > 70)
                     rxObject.children[1].children[0].children[0].children[0].children[0].setAttribute("fill", "var(--rx-battery-gt70)");
