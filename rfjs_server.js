@@ -29,7 +29,6 @@ const udpSock = dgram.createSocket('udp4');
 const udpBindAddress = findSuitableNetworkAddressForUDP(os);
 
 const udpCommentSock = dgram.createSocket('udp4');
-// udpCommentSock.bind({port: 53210});
 udpCommentSock.on("listening", () => {
     const address = udpCommentSock.address();
     console.log('Comment annotation interface listening on '+address.address+':'+address.port);
