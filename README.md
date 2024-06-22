@@ -33,11 +33,11 @@ By default, the web view supports two different styles for portrait and landscap
 * A special set of layouts is activated, if the screen reports a maximum width of 765px (e.g. most smartphones). For these devices, the layout shows two channels per row in portrait and three channels per row in landscape mode.
 
 <p style="text-align: center">
-<img alt="RFjs in landscape mode" src="doc/landscape.png" width="75%"/>
+<img alt="RFjs in landscape mode" src="doc/landscape.png" style="width: 75%;"/>
 </p>
 
 <p style="text-align: center">
-<img alt="RFjs in portrait mode" src="doc/portrait.png" width="50%"/>
+<img alt="RFjs in portrait mode" src="doc/portrait.png"  style="width: 50%;"/>
 </p>
 
 ## Configuration
