@@ -32,7 +32,7 @@ By default, the web view supports two different styles for portrait and landscap
 * In **portrait** mode, the layout is quite different and only shows two channels per row. This creates a "virtual rack" layout, resembling the familiar look of rack-mounted dual channel receivers in a dark color scheme, suitable for FoH use. A single WQHD (1920x1200) monitor rotated by 90° can display at least 30 channels.
 * A special set of layouts is activated, if the screen reports a maximum width of 765px (e.g. most smartphones). For these devices, the layout shows two channels per row in portrait and three channels per row in landscape mode.
 
-
+![RFjs in landscape mode](doc/landscape.png)
 
 ## Configuration
 The server needs to know to which address or interface it should bind its listening interfaces to.
