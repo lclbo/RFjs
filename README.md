@@ -40,6 +40,42 @@ By default, the web view supports two different styles for portrait and landscap
 <img alt="RFjs in portrait mode" src="doc/portrait.png"  style="width: 50%;"/>
 </p>
 
+## Channel Information
+### Name
+Reflects the Name configured in the Receiver.
+
+### Comment / Role Name
+Can optionally be set and changed during a show via the UDP annotation interface, e.g. with carrying cast or role name.
+If no comment (and no empty string) is sent, the default string is the IP address of the receiver.
+
+### Frequency
+Reflects the current Receiver setting.
+
+### RF Levels
+Reflects the current RF level for both antennas, and the last measurement period's peak in a lighter color.
+
+### AF Level
+Reflects the current AF level as well as the last measurement period's peak in a lighter color.
+
+### Pilot Tone Status
+Reflects the Pilot Tone status of the receiver:  
+**P** means the Pilot Tone was received constantly throughout the query interval.  
+**?** means the Pilot Tone was received unsteadily (usually due to poor reception).  
+An empty Pilot field means no Pilot Tone was received.
+
+### Battery Status
+The Battery bar reflects the transmitted battery status in %. 
+Usually the transmitters only send certain discrete levels.
+A **?** means no battery level is received (usually due to poor reception).
+
+### Warning String
+If the transmitter emits warning messages (e.g. *AF Peak*, *Low RF Signal*, *Low Battery*, ...), these are displayed in the bottom line.
+In addition, the affected transmitter box starts to flash with a red background.
+
+## Inactive Transmitters
+If a transmitter is inactive, but the receiver is online, the respective cell is shown in an opaque style.
+
+
 ## Configuration
 The server needs to know to which address or interface it should bind its listening interfaces to.
 By default, the web server does not bind to a specific interface and is listening on ```80/TCP``` of all available interfaces.  
