@@ -29,10 +29,16 @@ For a more permanent installation, Node.js process managers such as ```pm2``` ca
 ## Layout
 By default, the web view supports two different styles for portrait and landscape orientation, with some additional cases:
 * In **landscape** mode, five channels are displayed per row, showing 30 channels without scrolling for an aspect ratio of 4:3.
-* In **portrait** mode, the layout is quite different and only shows two channels per row. This creates a "virtual rack" layout, resembling the familiar look of rack-mounted dual channel receivers in a dark color scheme, suitable for FoH use. A single WQHD (1920x1200) monitor rotated by 90° can display at least 30 channels.
+* In **portrait** mode, the layout is quite different and only shows two channels per row. This creates a "virtual rack" layout, resembling the familiar look of rack-mounted dual channel receivers in a dark color scheme, suitable for FoH use. A single WQHD (1920x1200) monitor rotated by 90° can display at least 28 channels.
 * A special set of layouts is activated, if the screen reports a maximum width of 765px (e.g. most smartphones). For these devices, the layout shows two channels per row in portrait and three channels per row in landscape mode.
 
-![RFjs in landscape mode](doc/landscape.png)
+<p style="text-align: center">
+<img alt="RFjs in landscape mode" src="doc/landscape.png" width="75%"/>
+</p>
+
+<p style="text-align: center">
+<img alt="RFjs in portrait mode" src="doc/portrait.png" width="50%"/>
+</p>
 
 ## Configuration
 The server needs to know to which address or interface it should bind its listening interfaces to.
