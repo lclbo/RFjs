@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-const DO_DEBUG = true;
+const DO_DEBUG = false;
 
 let commentsMap = new Map();
 
