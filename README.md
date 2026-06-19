@@ -90,6 +90,10 @@ The project should work on all major current browsers.
 In addition, the web view scripting is limited to ES5 JavaScript style.
 It is designed to be working down to iOS9, so everything from an iPad2 onwards should be compatible.
 
+The web client receives live state updates over an unencrypted WebSocket (`ws://<host>/ws`) instead of polling JSON endpoints.
+Compact meter updates are pushed when receiver data changes; full metadata updates are sent on connect, when receivers are added or removed, and every two seconds.
+Legacy iPad clients are detected automatically and receive compact updates at a reduced rate (250ms instead of 100ms).
+
 If the web view page is stored to an iOS device's home screen, it becomes a fullscreen web app.
 
 ## Naming / Annotating devices

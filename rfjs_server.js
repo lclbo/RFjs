@@ -1,20 +1,9 @@
 #!/usr/bin/env node
-const DO_DEBUG = false;
-const dbg_data = '{\n' +
-    '  "10.0.0.1":{"name":"DEMO 001","comment":"This is demo receiver #1","freq":"684.000","squelch":"15","afOut":"18","lastUpdate":1635089614363,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":0},"warningString":"Low Batt"},\n' +
-    '  "10.0.0.2":{"name":"DEMO 002","comment":"And this is his companion, demo #2","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"}\n' +
-    '}';
-let dbgRcv = JSON.parse(dbg_data);
-let dbgMap = new Map();
-Object.entries(dbgRcv).forEach(entry => {
-    const [key,val] = entry;
-    dbgMap.set(key.replace('"',''), val);
-});
-dbgMap = new Map([...dbgMap.entries()].sort(compareIPv4mapKeys));
-let dbg_str = JSON.stringify([...dbgMap]);
+const DO_DEBUG = true;
 
 let commentsMap = new Map();
 
+const crypto = require('crypto');
 const dgram = require('dgram');
 const http = require('http');
 const fs = require('fs');
@@ -80,7 +69,11 @@ httpServer.on("error", (err) => {
 });
 
 httpServer.on("request", httpServerRequestResponder);
+httpServer.on("upgrade", httpServerUpgradeHandler);
 
+const wsClients = new Set();
+let wsShortBroadcastTimer = null;
+let wsFullBroadcastInterval = null;
 
 udpSock.on('message', (msg, senderInfo) => {
     // let msgDebug = "["+senderInfo.address+"] "+msg.toString().replace(/[\n\r]/g, ' | ')+"";
@@ -102,11 +95,6 @@ else {
         udpSock.setBroadcast(true);
     });
     udpCommentSock.bind({port: 53210, address: udpBindAddress});
-}
-
-if(!DO_DEBUG) {
-    sendCyclicRequest(udpSock);
-    pushIntervalHandle = setInterval(sendCyclicRequest, 80000, udpSock);
 }
 
 function sendCyclicRequest(conn, addr=null) {
@@ -166,6 +154,7 @@ function removeUnconnectedReceivers() {
     if(deletedAny) {
         knownReceiversFull = new Map([...knownReceiversFull.entries()].sort(compareIPv4mapKeys));
         knownReceiversShort = new Map([...knownReceiversShort.entries()].sort(compareIPv4mapKeys));
+        scheduleWsFullBroadcast(true);
     }
 }
 
@@ -185,6 +174,7 @@ function addNewReceiver(conn, address) {
 
     sendConfigRequest(conn, address);
     sendCyclicRequest(conn, address);
+    scheduleWsFullBroadcast(true);
 }
 
 /**
@@ -281,6 +271,8 @@ function updateReceiver(address, msg) {
     knownReceiversFull.set(address, newObj);
     knownReceiversShort.set(address, Object.assign({}, knownReceiversShort.get(address), receivedItemsShort));
 
+    scheduleWsShortBroadcast();
+
     /* This section allows storing the results to a local file for offline debugging without receivers present */
     // fs.writeFile('RxFull.json', JSON.stringify([...knownReceiversFull]), (err) => {
     //     if(err !== null)
@@ -291,6 +283,92 @@ function updateReceiver(address, msg) {
     //         console.log("file write error: "+err);
     // });
 
+}
+
+/********************************************************************************/
+/* debug only                                                                   */
+/********************************************************************************/
+
+const debugSimulationIntervalMs = 50;
+
+const dbg_data = '{\n' +
+    '  "10.0.0.2":{"name":"DEMO 002","comment":"This is demo receiver #2","freq":"684.000","squelch":"15","afOut":"18","lastUpdate":1635089614363,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":1,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":3,"currentHold":3,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":true,"percentage":0},"warningString":"Low Batt"},\n' +
+    '  "10.0.0.1":{"name":"DEMO 001","comment":"And this is his companion, demo #1","freq":"670.150","squelch":"15","afOut":"18","lastUpdate":1635089614378,"rf1":{"min":0,"max":0,"active":true},"rf2":{"min":0,"max":0,"active":false},"flags":{"lastCycleMute":1,"lastCycleTxMute":1,"lastCycleRfMute":1,"lastCycleRxMute":1},"lastCyclePilot":0,"rf":{"current":0,"antenna":"1","pilot":false},"af":{"currentPeak":4,"currentHold":4,"mute":1,"txMute":1,"rfMute":1,"rxMute":1},"battery":{"known":false,"percentage":0},"warningString":"RF Mute"}\n' +
+    '}';
+
+let dbgMap = new Map();
+
+function buildDbgMap() {
+    let dbgRcv = JSON.parse(dbg_data);
+    dbgMap = new Map();
+    Object.entries(dbgRcv).forEach(entry => {
+        const [key,val] = entry;
+        dbgMap.set(key.replace('"',''), val);
+    });
+    dbgMap = new Map([...dbgMap.entries()].sort(compareIPv4mapKeys));
+}
+
+function clampMeterValue(value) {
+    return Math.max(0, Math.min(100, Math.round(value)));
+}
+
+function buildAfMuteState(af) {
+    let muteState = 0;
+    if(af.mute) muteState |= 1;
+    if(af.txMute) muteState |= 2;
+    if(af.rfMute) muteState |= 4;
+    if(af.rxMute) muteState |= 8;
+    return muteState;
+}
+
+function initDebugSimulation() {
+    buildDbgMap();
+
+    dbgMap.forEach(function(rx, address) {
+        knownReceiversFull.set(address, Object.assign({}, rx));
+        knownReceiversShort.set(address, Object.assign({}, rx));
+    });
+
+    simulateDebugReceiverUpdates();
+    setInterval(simulateDebugReceiverUpdates, debugSimulationIntervalMs);
+}
+
+function simulateDebugReceiverUpdates() {
+    const now = Date.now();
+    let index = 0;
+
+    dbgMap.forEach(function(rx, address) {
+        const phase = (now / 120) + (index * 1.7);
+        const rf1min = clampMeterValue(15 + 35 * Math.sin(phase));
+        const rf1max = clampMeterValue(rf1min + 8 + 22 * Math.sin((phase * 1.3) + 0.5));
+        const rf2min = clampMeterValue(10 + 30 * Math.sin(phase + 1.2));
+        const rf2max = clampMeterValue(rf2min + 6 + 18 * Math.sin((phase * 1.1) + 2));
+        const afHold = clampMeterValue(20 + 50 * Math.sin((phase * 0.9) + 0.3));
+        const afPeak = clampMeterValue(afHold + 5 + 25 * Math.sin((phase * 1.5) + 1));
+        const rfCurrent = clampMeterValue(25 + 45 * Math.sin(phase * 0.7));
+        const afMuteState = buildAfMuteState(rx.af);
+
+        const msg =
+            "rf1 " + rf1min + " " + rf1max + " " + (rx.rf1.active ? "1" : "0") + "\r" +
+            "rf2 " + rf2min + " " + rf2max + " " + (rx.rf2.active ? "1" : "0") + "\r" +
+            "af " + afPeak + " " + afHold + " " + afMuteState + "\r" +
+            "rf " + rfCurrent + " 1 0\r";
+
+        updateReceiver(address, msg);
+        index++;
+    });
+}
+
+/********************************************************************************/
+/* end debug only                                                               */
+/********************************************************************************/
+
+if(DO_DEBUG) {
+    initDebugSimulation();
+}
+else {
+    sendCyclicRequest(udpSock);
+    pushIntervalHandle = setInterval(sendCyclicRequest, 80000, udpSock);
 }
 
 /**
@@ -321,26 +399,279 @@ function findSuitableNetworkAddressForUDP(os) {
     return null;
 }
 
+function ipv4ToInt(ip) {
+    const p = ip.split(".").map(Number);
+    return ((p[0] << 24) | (p[1] << 16) | (p[2] << 8) | p[3]) >>> 0;
+    // >>>0 (unsigned right shift) converts the signed 32-bit int to unsigned
+}
+
 /**
- * IPv4 address comparison, from https://stackoverflow.com/a/65950890
- * @param addrStrA IP address A as string
- * @param addrStrB IP address B as string
+ * Sort Map entries by IPv4 address (numeric order)
+ * @param a Map entry [ip, value]
+ * @param b Map entry [ip, value]
  * @returns {number}
  */
-function compareIPv4mapKeys(addrStrA, addrStrB) {
-    // noinspection CommaExpressionJS
-    const numA = Number(
-        addrStrA[0].split('.')
-            .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))
-            .reduce((a, v) => ((a += v), a), 0)
+function compareIPv4mapKeys(a, b) {
+    return ipv4ToInt(a[0]) - ipv4ToInt(b[0]);
+}
+
+function getShortStateArray() {
+    return [...knownReceiversShort];
+}
+
+function getFullStateArray() {
+    return [...knownReceiversFull];
+}
+
+function isLegacyUserAgent(userAgent) {
+    return userAgent.indexOf("iPad") !== -1;
+}
+
+function hasLegacyWsClient() {
+    for (const client of wsClients) {
+        if (client.legacy)
+            return true;
+    }
+    return false;
+}
+
+function buildWsMessage(type) {
+    return JSON.stringify({
+        t: type,
+        d: type === "f" ? getFullStateArray() : getShortStateArray()
+    });
+}
+
+function encodeWsTextFrame(text) {
+    const payload = Buffer.from(text, "utf8");
+    const len = payload.length;
+    let header;
+
+    if (len < 126) {
+        header = Buffer.alloc(2);
+        header[0] = 0x81;   //single frame header
+        header[1] = len;
+    }
+    else if (len < 65536) {
+        header = Buffer.alloc(4);
+        header[0] = 0x81;
+        header[1] = 126;
+        header.writeUInt16BE(len, 2);
+    }
+    else {
+        header = Buffer.alloc(10);
+        header[0] = 0x81;
+        header[1] = 127;
+        header.writeUInt32BE(0, 2);
+        header.writeUInt32BE(len, 6);
+    }
+
+    return Buffer.concat([header, payload]);
+}
+
+function wsSendText(socket, text) {
+    socket.write(encodeWsTextFrame(text));
+}
+
+function wsSendPong(socket, pingPayload) {
+    const payload = pingPayload || Buffer.alloc(0);
+    const len = payload.length;
+    const header = Buffer.alloc(2);
+    header[0] = 0x8A;
+    header[1] = len;
+    socket.write(Buffer.concat([header, payload]));
+}
+
+function handleWsClientData(client, buffer) {
+    if (buffer.length < 2)
+        return;
+
+    const opcode = buffer[0] & 0x0F;
+    let payloadLen = buffer[1] & 0x7F;
+    let offset = 2;
+
+    if (payloadLen === 126) {
+        if (buffer.length < 4)
+            return;
+        payloadLen = buffer.readUInt16BE(2);
+        offset = 4;
+    }
+    else if (payloadLen === 127) {
+        if (buffer.length < 10)
+            return;
+        payloadLen = buffer.readUInt32BE(6);
+        offset = 10;
+    }
+
+    if ((buffer[1] & 0x80) !== 0)
+        offset += 4;
+
+    if (opcode === 0x8) {
+        client.socket.end();
+        removeWsClient(client);
+    }
+    else if (opcode === 0x9) {
+        wsSendPong(client.socket, buffer.slice(offset, offset + payloadLen));
+    }
+}
+
+function removeWsClient(client) {
+    wsClients.delete(client);
+    if (wsClients.size === 0) {
+        if (wsShortBroadcastTimer !== null) {
+            clearTimeout(wsShortBroadcastTimer);
+            wsShortBroadcastTimer = null;
+        }
+        if (wsFullBroadcastInterval !== null) {
+            clearInterval(wsFullBroadcastInterval);
+            wsFullBroadcastInterval = null;
+        }
+    }
+}
+
+function broadcastWsShort() {
+    if (wsClients.size === 0)
+        return;
+
+    const payload = buildWsMessage("s");
+    const now = Date.now();
+    let skippedLegacy = false;
+
+    wsClients.forEach(function(client) {
+        const minInterval = client.legacy ? 250 : 100;
+        if (now - client.lastShortSent >= minInterval) {
+            try {
+                wsSendText(client.socket, payload);
+                client.lastShortSent = now;
+            }
+            catch (e) {
+                removeWsClient(client);
+            }
+        }
+        else if (client.legacy) {
+            skippedLegacy = true;
+        }
+    });
+
+    if (skippedLegacy)
+        scheduleWsShortBroadcast();
+}
+
+function sendWsFullToClient(client) {
+    try {
+        wsSendText(client.socket, buildWsMessage("f"));
+        client.lastFullSent = Date.now();
+    }
+    catch (e) {
+        removeWsClient(client);
+    }
+}
+
+function broadcastWsFull() {
+    if (wsClients.size === 0)
+        return;
+
+    const payload = buildWsMessage("f");
+    const now = Date.now();
+
+    wsClients.forEach(function(client) {
+        try {
+            wsSendText(client.socket, payload);
+            client.lastFullSent = now;
+        }
+        catch (e) {
+            removeWsClient(client);
+        }
+    });
+}
+
+function ensureWsFullBroadcastInterval() {
+    if (wsFullBroadcastInterval !== null)
+        return;
+
+    wsFullBroadcastInterval = setInterval(function() {
+        if (wsClients.size === 0) {
+            clearInterval(wsFullBroadcastInterval);
+            wsFullBroadcastInterval = null;
+            return;
+        }
+        broadcastWsFull();
+    }, 10000);
+}
+
+function scheduleWsShortBroadcast() {
+    if (wsClients.size === 0 || wsShortBroadcastTimer !== null)
+        return;
+
+    const delay = hasLegacyWsClient() ? 250 : 100;
+    wsShortBroadcastTimer = setTimeout(function() {
+        wsShortBroadcastTimer = null;
+        broadcastWsShort();
+    }, delay);
+}
+
+function scheduleWsFullBroadcast(immediate) {
+    if (wsClients.size === 0)
+        return;
+
+    if (immediate)
+        broadcastWsFull();
+
+    ensureWsFullBroadcastInterval();
+}
+
+function httpServerUpgradeHandler(request, socket) {
+    const requestUrl = request.url || "";
+    if (!requestUrl.includes("/ws")) {
+        socket.destroy();
+        return;
+    }
+
+    const secWebSocketKey = request.headers["sec-websocket-key"];
+    if (!secWebSocketKey) {
+        socket.destroy();
+        return;
+    }
+
+    // RFC 6455 WebSocket handshake: Sec-WebSocket-Accept = Base64(SHA1(key + magic GUID))
+    const acceptKey = crypto
+        .createHash("sha1")
+        .update(secWebSocketKey + "258EAFA5-E914-47DA-95CA-C5AB0DC85B11") // fixed protocol constant, not app-specific
+        .digest("base64");
+
+    socket.write(
+        "HTTP/1.1 101 Switching Protocols\r\n" +
+        "Upgrade: websocket\r\n" +
+        "Connection: Upgrade\r\n" +
+        "Sec-WebSocket-Accept: " + acceptKey + "\r\n\r\n"
     );
-    // noinspection CommaExpressionJS
-    const numB = Number(
-        addrStrB[0].split('.')
-            .map((num, idx) => num * Math.pow(2, (3 - idx) * 8))
-            .reduce((a, v) => ((a += v), a), 0)
-    );
-    return numA - numB;
+
+    const client = {
+        socket: socket,
+        legacy: isLegacyUserAgent(request.headers["user-agent"] || ""),
+        lastShortSent: 0,
+        lastFullSent: 0
+    };
+
+    wsClients.add(client);
+
+    // Defer until handshake is complete so the client is ready to receive a full snapshot.
+    setImmediate(function() {
+        if(wsClients.has(client))
+            sendWsFullToClient(client);
+    });
+
+    ensureWsFullBroadcastInterval();
+
+    socket.on("data", function(chunk) {
+        handleWsClientData(client, chunk);
+    });
+    socket.on("close", function() {
+        removeWsClient(client);
+    });
+    socket.on("error", function() {
+        removeWsClient(client);
+    });
 }
 
 /**
@@ -353,18 +684,12 @@ function httpServerRequestResponder(req,res) {
     if(req.url.includes("rxShort.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        if(DO_DEBUG)
-            return res.end(dbg_str);
-        else
-            return res.end(JSON.stringify([...knownReceiversShort]));
+        return res.end(JSON.stringify(getShortStateArray()));
     }
     else if(req.url.includes("rxFull.json")) {
         res.statusCode = 200;
         res.setHeader("Content-Type", "application/json");
-        if(DO_DEBUG)
-            return res.end(dbg_str);
-        else
-            return res.end(JSON.stringify([...knownReceiversFull]));
+        return res.end(JSON.stringify(getFullStateArray()));
     }
     else if(req.url.includes("rf.js")) {
         fs.readFile("www/rf.js", function(err, data) {
@@ -395,6 +720,17 @@ function httpServerRequestResponder(req,res) {
                 return res.end("File not readable.");
             }
             res.setHeader("Content-Type", "text/css");
+            res.statusCode = 200;
+            return res.end(data);
+        });
+    }
+    else if(req.url.includes("manifest.json")) {
+        fs.readFile("www/manifest.json", function(err, data) {
+            if (err) {
+                res.statusCode = 500;
+                return res.end("File not readable.");
+            }
+            res.setHeader("Content-Type", "application/manifest+json");
             res.statusCode = 200;
             return res.end(data);
         });

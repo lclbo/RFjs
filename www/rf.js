@@ -3,38 +3,20 @@
  *
  * ES5 code compatible (down to iOS9)
  * for older devices, transformations are replaced with width modifications
- * and the refresh rate is reduced
+ * and the server reduces push frequency for legacy clients
  */
 
-var reloadStateHandle = null;
+var ws = null;
+var wsReconnectHandle = null;
+var wsReconnectDelayMs = 1000;
 var isLegacyClient = !!(navigator.userAgent.match(/(iPad)/));
-var defaultIntervalMs = (isLegacyClient) ? 250 : 100;
-var fullEveryCycles = Math.ceil(2000/defaultIntervalMs);    //every 2s full refresh, otherwise only compact set
-var iterationCount = 0;
 var errorCount = 0;
 var errorThreshold = 10;
 
 var numberOfReceivers = 0;
 
-function loadJson(url, callback) {
-    var xhr = new XMLHttpRequest();
-    xhr.open('GET', url, true);
-    xhr.onreadystatechange = function () {
-        if (this.readyState === 4) {
-            if(this.status === 200) {
-                if(errorCount !== 0) {
-                    errorCount = 0;
-                    evaluateError();
-                }
-                callback(this.responseText);
-            }
-            else {
-                errorCount++;
-                evaluateError();
-            }
-        }
-    }
-    xhr.send(null);
+function getWebSocketUrl() {
+    return "ws://" + window.location.host + "/ws";
 }
 
 function evaluateError() {
@@ -46,43 +28,58 @@ function evaluateError() {
     }
 }
 
-function loadState() {
-    var full = (iterationCount % fullEveryCycles === 0);
-    iterationCount++;
+function handleStateMessage(responseText) {
+    if(errorCount !== 0) {
+        errorCount = 0;
+        evaluateError();
+    }
 
-    if(full) {
-        loadJson("rxFull.json",function(response) {
-            updateState(JSON.parse(response),true);
-        });
+    var msg = JSON.parse(responseText);
+    updateState(msg.d, msg.t === "f");
+}
+
+function connectWebSocket() {
+    if(ws !== null) {
+        try {
+            ws.close();
+        }
+        catch (e) {}
+        ws = null;
     }
-    else {
-        loadJson("rxShort.json",function(response) {
-            updateState(JSON.parse(response),false);
-        });
-    }
-    // ES6-compatible alternative to above section
-    //
-    // if(full) {
-    //     fetch("rxFull.json")
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             updateState(data, true);
-    //         })
-    //         .catch(err => console.log(err))
-    // }
-    // else {
-    //     fetch("rxShort.json")
-    //         .then(response => response.json())
-    //         .then(data => {
-    //             updateState(data, false);
-    //         })
-    //         .catch(err => console.log(err))
-    // }
+
+    ws = new WebSocket(getWebSocketUrl());
+
+    ws.onopen = function() {
+        if(errorCount !== 0) {
+            errorCount = 0;
+            evaluateError();
+        }
+    };
+
+    ws.onmessage = function(evt) {
+        handleStateMessage(evt.data);
+    };
+
+    ws.onclose = function() {
+        ws = null;
+        errorCount++;
+        evaluateError();
+        if(wsReconnectHandle === null) {
+            wsReconnectHandle = window.setTimeout(function() {
+                wsReconnectHandle = null;
+                connectWebSocket();
+            }, wsReconnectDelayMs);
+        }
+    };
+
+    ws.onerror = function() {
+        errorCount++;
+        evaluateError();
+    };
 }
 
 function clearAllReceivers() {
     document.getElementById("rfArea").innerHTML = "";
-    iterationCount = 0; //immediately load full dataset
 }
 
 function updateState(data, full) {
@@ -98,14 +95,12 @@ function updateState(data, full) {
     else
         document.getElementById('noDevicesOverlay').classList.add("hidden");
 
-    var foundUnknownReceiver = false;
     // for(const [key,rx] of data) { //ECMA6 only
     data.forEach(function(elem) {
         var rx = elem[1];
         var key = elem[0];
 
         if(document.getElementById("rx-"+key) === null) {
-            foundUnknownReceiver = true;
             rxArea.insertAdjacentHTML('beforeend', "" +
                 "<div class='rx rxInactive' id='rx-" + key + "'>" +
                     "<div class='topBox'>" +
@@ -157,10 +152,10 @@ function updateState(data, full) {
                 "</div>"
             );
         }
-        else {
-            var rxObject = document.getElementById("rx-"+key);
 
-            if(full) {
+        var rxObject = document.getElementById("rx-"+key);
+
+        if(full) {
                 rxObject.children[0].children[0].textContent = rx.name;
                 rxObject.children[0].children[2].textContent = rx.comment;
                 rxObject.children[0].children[1].children[0].textContent = rx.freq;
@@ -187,9 +182,9 @@ function updateState(data, full) {
                     rxObject.classList.add("rxHighlight");
                 else
                     rxObject.classList.remove("rxHighlight");
-            }
+        }
 
-            if(isLegacyClient) { //scale is not supported on iOS9
+        if(isLegacyClient) { //scale is not supported on iOS9
                 // RF min and max for antenna I and II
                 rxObject.children[1].children[1].children[0].children[0].children[1].style.width = Math.min(100,(rx.rf1.min))+"%";
                 rxObject.children[1].children[1].children[0].children[0].children[2].style.width = Math.min(100,(rx.rf1.max))+"%";
@@ -231,18 +226,23 @@ function updateState(data, full) {
             // rxObject.children[1].children[2].children[1].textContent = ((Math.sign(rx.afOut) !== -1) ? "+" : "") + "" + rx.afOut;
             rxObject.children[1].children[2].children[2].style.visibility = (rx.flags.lastCycleMute && rx.warningString !== "RF Mute") ? "visible" : "hidden";
             rxObject.children[1].children[2].children[3].textContent = (rx.warningString === "OK" || rx.warningString === "RF Mute") ? " " : rx.warningString;
-        }
     });
-
-    if(foundUnknownReceiver)
-        iterationCount = 0; //immediately load full dataset
 
     return true;
 }
 
 function stopRefresh() {
-    if(reloadStateHandle !== null)
-        window.clearInterval(reloadStateHandle);
+    if(wsReconnectHandle !== null) {
+        window.clearTimeout(wsReconnectHandle);
+        wsReconnectHandle = null;
+    }
+    if(ws !== null) {
+        try {
+            ws.close();
+        }
+        catch (e) {}
+        ws = null;
+    }
 }
 
 function conditionalLog(msg) {
@@ -251,6 +251,5 @@ function conditionalLog(msg) {
 
 document.addEventListener('DOMContentLoaded', function () {
     document.getElementById("loadingBeacon").style.animationPlayState = "running";
-    if(reloadStateHandle === null)
-        reloadStateHandle = window.setInterval(loadState,defaultIntervalMs);
+    connectWebSocket();
 });
